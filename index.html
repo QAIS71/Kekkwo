@@ -1,73 +1,88 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <title>محادثات فورية</title>
-  <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
-  <style>
-    body {
-      background-color: #f4f4f4;
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 20px;
-    }
-
-    h2 {
-      color: #333;
-    }
-
-    #messages {
-      border: 1px solid #ccc;
-      background: #fff;
-      height: 300px;
-      overflow-y: scroll;
-      padding: 10px;
-      margin-bottom: 10px;
-    }
-
-    input {
-      padding: 10px;
-      width: 70%;
-      font-size: 16px;
-    }
-
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محول الصور السريع | Fast Image Converter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .hidden { display: none; }
+    </style>
 </head>
-<body>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
 
-  <h2>🗨️ المحادثات الفورية</h2>
-  <div id="messages"></div>
+    <button onclick="toggleLanguage()" class="absolute top-5 right-5 bg-white px-4 py-2 rounded-shadow hover:bg-gray-200 transition">
+        English / عربي
+    </button>
 
-  <input id="msgInput" placeholder="اكتب رسالتك هنا..." />
-  <button onclick="sendMessage()">إرسال</button>
+    <div class="bg-white p-8 rounded-xl shadow-2xl max-w-md w-full text-center">
+        <h1 id="title" class="text-2xl font-bold mb-6 text-gray-800">محول الصور السريع</h1>
+        <p id="desc" class="text-gray-600 mb-6">ارفع صورتك لتحويلها فوراً (مجاني 100%)</p>
 
-  <script>
-    // ضع هنا رابط خادمك من serveo.net
-    const socket = io("https://b46cf45ecb9c8c397db50a7c15f75984.serveo.net");
+        <div class="border-2 border-dashed border-blue-400 rounded-lg p-10 mb-6 cursor-pointer hover:bg-blue-50 transition" onclick="document.getElementById('fileInput').click()">
+            <input type="file" id="fileInput" class="hidden" accept="image/*">
+            <span id="uploadText" class="text-blue-500">اضغط هنا لرفع الصورة</span>
+        </div>
 
-    socket.on("connect", () => {
-      console.log("✅ متصل بالخادم");
-    });
+        <canvas id="canvas" class="hidden max-w-full h-auto rounded shadow mb-4"></canvas>
 
-    socket.on("message", (msg) => {
-      const messagesDiv = document.getElementById("messages");
-      messagesDiv.innerHTML += `<div>🟢 ${msg}</div>`;
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    });
+        <div id="actions" class="hidden">
+            <button id="downloadBtn" class="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition w-full">حفظ الصورة</button>
+        </div>
+    </div>
 
-    function sendMessage() {
-      const input = document.getElementById("msgInput");
-      const msg = input.value;
-      if (msg) {
-        socket.emit("message", msg);
-        input.value = "";
-      }
-    }
-  </script>
+    <script>
+        let currentLang = 'ar';
+        const translations = {
+            ar: { title: "محول الصور السريع", desc: "ارفع صورتك لتحويلها فوراً (مجاني 100%)", upload: "اضغط هنا لرفع الصورة", download: "حفظ الصورة المعالجة" },
+            en: { title: "Fast Image Converter", desc: "Upload your image to convert instantly (100% Free)", upload: "Click here to upload image", download: "Save Processed Image" }
+        };
 
+        function toggleLanguage() {
+            currentLang = currentLang === 'ar' ? 'en' : 'ar';
+            document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+            document.getElementById('title').innerText = translations[currentLang].title;
+            document.getElementById('desc').innerText = translations[currentLang].desc;
+            document.getElementById('uploadText').innerText = translations[currentLang].upload;
+            document.getElementById('downloadBtn').innerText = translations[currentLang].download;
+        }
+
+        const fileInput = document.getElementById('fileInput');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const actions = document.getElementById('actions');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        fileInput.onchange = function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    // إعداد الكانفاس (اللوحة)
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    canvas.classList.remove('hidden');
+                    actions.classList.remove('hidden');
+
+                    // رسم الصورة وتحويلها للأبيض والأسود (المعالجة)
+                    ctx.filter = 'grayscale(100%)';
+                    ctx.drawImage(img, 0, 0);
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+
+        downloadBtn.onclick = function() {
+            const link = document.createElement('a');
+            link.download = 'converted-image.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        };
+    </script>
 </body>
 </html>
