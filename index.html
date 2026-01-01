@@ -2,198 +2,165 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>تهنئة زفاف محمد هائل</title>
+    <title>تهنئة فضائية ملكية - محمد هائل</title>
     <style>
-        :root {
-            --gold: #d4af37;
-            --dark-gold: #aa892e;
-            --white: #ffffff;
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'Cairo', sans-serif;
+            color: white;
         }
 
-        body {
-            background: radial-gradient(circle, #1a1a1a 0%, #000000 100%);
-            color: var(--white);
-            font-family: 'Amiri', serif, Tahoma;
+        /* فضاء النجوم */
+        .space {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: black url('https://i.imgur.com/vHqKcl0.png') repeat;
+            z-index: 0;
+            animation: move-twink-back 200s linear infinite;
+        }
+
+        /* الكرة الأرضية المتحركة */
+        .earth {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 400px;
+            height: 400px;
+            margin-top: -200px;
+            margin-left: -200px;
+            background: url('https://i.imgur.com/uI9vLzf.jpg'); /* خريطة العالم */
+            background-size: cover;
+            border-radius: 50%;
+            box-shadow: inset 20px 0 80px 6px rgba(0, 0, 0, 1), -10px 0 20px 2px rgba(100, 150, 255, 0.4);
+            animation: rotate-earth 30s linear infinite;
+            z-index: 1;
+        }
+
+        /* تأثير ضوء الشمس على الأرض */
+        .earth::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            border-radius: 50%;
+            box-shadow: inset -50px 0 100px rgba(0,0,0,0.9);
+        }
+
+        @keyframes rotate-earth {
+            from { background-position: 0 0; }
+            to { background-position: 800px 0; }
+        }
+
+        /* الحاوية الزجاجية للرسالة */
+        .content {
+            position: relative;
+            z-index: 10;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            margin: 0;
-            overflow: hidden;
-            text-align: center;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(5px);
         }
 
-        /* ستارة الأضواء الخلفية */
-        .stars {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .container {
-            z-index: 10;
-            background: rgba(0, 0, 0, 0.7);
+        .card {
+            background: rgba(255, 255, 255, 0.1);
             padding: 40px;
-            border: 2px solid var(--gold);
-            border-radius: 50px 0 50px 0;
-            box-shadow: 0 0 30px var(--gold);
-            backdrop-filter: blur(10px);
-            max-width: 500px;
-            width: 90%;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            box-shadow: 0 0 40px rgba(212, 175, 55, 0.5);
+            text-align: center;
+            max-width: 600px;
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
         }
 
         h1 {
-            color: var(--gold);
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-            text-shadow: 0 0 10px var(--gold);
+            color: #ffd700;
+            font-size: 2.8rem;
+            text-shadow: 0 0 15px #ffd700;
+            margin-bottom: 10px;
         }
 
-        .input-box {
-            margin-top: 20px;
-        }
-
-        input {
-            padding: 15px;
-            width: 80%;
-            border-radius: 25px;
-            border: 2px solid var(--gold);
-            background: transparent;
-            color: white;
-            text-align: center;
-            font-size: 1.2rem;
-            outline: none;
-        }
-
-        button {
-            margin-top: 20px;
-            padding: 10px 30px;
-            border-radius: 25px;
-            border: none;
-            background: linear-gradient(45deg, var(--gold), #fff);
-            color: black;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        button:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 20px var(--gold);
-        }
-
-        /* منطقة النتيجة - مخفية في البداية */
-        #celebration {
-            display: none;
-            animation: fadeIn 2s ease-in-out forwards;
-        }
-
-        .heart-icon {
-            color: #ff0000;
-            font-size: 3rem;
-            animation: beat 0.8s infinite alternate;
-        }
-
-        @keyframes beat {
-            to { transform: scale(1.2); }
-        }
-
-        .couple-names {
+        .names {
             font-size: 2.2rem;
-            margin: 20px 0;
+            color: #00fbff;
             font-weight: bold;
-            line-height: 1.6;
+            margin: 20px 0;
+            text-shadow: 0 0 10px #00fbff;
         }
 
-        .highlight {
-            color: var(--gold);
-            display: block;
-            text-shadow: 0 0 15px var(--gold);
+        .congrats-text {
+            font-size: 1.5rem;
+            line-height: 1.8;
+            color: #fff;
         }
 
-        .message {
-            font-size: 1.3rem;
-            font-style: italic;
+        .rings {
+            font-size: 4rem;
+            margin: 20px 0;
+            filter: drop-shadow(0 0 10px gold);
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* جزيئات القلوب المتطايرة */
-        .heart-particle {
-            position: absolute;
-            color: var(--gold);
-            font-size: 20px;
+        /* جزيئات ضوئية */
+        .stars-overlay {
+            position: fixed;
+            width: 100%;
+            height: 100%;
             pointer-events: none;
-            animation: flyUp 4s linear infinite;
-        }
-
-        @keyframes flyUp {
-            0% { transform: translateY(100vh) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
         }
     </style>
 </head>
 <body>
 
-    <div class="stars" id="starCanvas"></div>
+    <div class="space"></div>
+    <div class="earth"></div>
 
-    <div class="container" id="mainContainer">
-        <div id="inputArea">
-            <h1>ألف مبروك يا عريس 💍</h1>
-            <p>أدخل اسمك يا بطل لمشاهدة المفاجأة:</p>
-            <input type="text" id="userName" placeholder="اكتب اسمك هنا...">
-            <br>
-            <button onclick="startCelebration()">عرض التهنية الملكية</button>
-        </div>
+    <div class="content">
+        <div class="card">
+            <div class="rings">💍✨🛰️</div>
+            <h1>تهنئة من أعماق الكون</h1>
+            <p>بمناسبة الخطوبة والزواج المبارك</p>
+            
+            <div class="names">
+                العريس: محمد هائل أحمد<br>
+                ❤️<br>
+                أجمل عروس في العالم
+            </div>
 
-        <div id="celebration">
-            <div class="heart-icon">❤️</div>
-            <h1>تم عقد القران المبارك</h1>
-            <div class="couple-names">
-                <span class="highlight">محمد هائل احمد محمد سعيد</span>
-                <span>&</span>
-                <span class="highlight" id="brideNameDisplay">شريكة حياته الغالية</span>
+            <div class="congrats-text">
+                "بارك الله لكما وبارك عليكما وجمع بينكما في خير"<br>
+                يا رب تجعل حياتهما منيرة كالفضاء واسعة كالسماء
             </div>
-            <div class="message">
-                "بارك الله لكما وبارك عليكما وجمع بينكما في خير"
-                <br><br>
-                ✨ ليلة من ألف ليلة وليلة ✨
+            
+            <div style="margin-top: 30px; font-size: 1.2rem; color: #ffd700;">
+                ⭐ أسعد الله أيامكم يا أبطال ⭐
             </div>
-            <div style="font-size: 3rem; margin-top: 20px;">👑💍🥂</div>
         </div>
     </div>
 
     <script>
-        function startCelebration() {
-            const name = document.getElementById('userName').value;
-            if (name.trim() === "") {
-                alert("يرجى كتابة الاسم أولاً!");
-                return;
-            }
-
-            // إخفاء منطقة الإدخال وإظهار الاحتفال
-            document.getElementById('inputArea').style.display = 'none';
-            document.getElementById('celebration').style.display = 'block';
-
-            // إنشاء تأثير القلوب المتطايرة
-            setInterval(createHeart, 200);
-        }
-
-        function createHeart() {
-            const heart = document.createElement('div');
-            heart.classList.add('heart-particle');
-            heart.innerHTML = '✨'; // يمكن تغييرها لـ ❤️
-            heart.style.left = Math.random() * 100 + 'vw';
-            heart.style.animationDuration = (Math.random() * 2 + 3) + 's';
-            document.body.appendChild(heart);
-            
-            setTimeout(() => {
-                heart.remove();
-            }, 4000);
+        // إضافة نجوم عشوائية متحركة في الخلفية
+        for (let i = 0; i < 100; i++) {
+            let star = document.createElement('div');
+            star.style.position = 'absolute';
+            star.style.width = '2px';
+            star.style.height = '2px';
+            star.style.background = 'white';
+            star.style.top = Math.random() * 100 + 'vh';
+            star.style.left = Math.random() * 100 + 'vw';
+            star.style.opacity = Math.random();
+            star.style.zIndex = '0';
+            document.body.appendChild(star);
         }
     </script>
 </body>
