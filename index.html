@@ -2,87 +2,126 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>محول الصور السريع | Fast Image Converter</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>تحية خاصة لمحمد هائل</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .hidden { display: none; }
+        body {
+            background-color: #0a0a0a;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        /* خلفية الأضواء المتحركة */
+        .lights {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,215,0,0.1) 0%, rgba(0,0,0,1) 70%);
+            z-index: -1;
+            animation: pulse 3s infinite alternate;
+        }
+
+        @keyframes pulse {
+            from { opacity: 0.5; }
+            to { opacity: 1; }
+        }
+
+        .container {
+            border: 5px solid #ffd700;
+            padding: 50px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 0 50px #ffd700;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            color: #ffd700;
+            text-shadow: 0 0 20px #ff0000, 0 0 30px #ffd700;
+            margin-bottom: 10px;
+            animation: glow 1.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 20px #ff0000; }
+            to { text-shadow: 0 0 40px #ffd700, 0 0 10px #fff; }
+        }
+
+        .name {
+            font-size: 2.5rem;
+            color: #00fbff;
+            display: block;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        .stickers {
+            font-size: 4rem;
+            margin: 20px 0;
+        }
+
+        .power-badge {
+            display: inline-block;
+            background: linear-gradient(45deg, #ff0000, #ffd700);
+            padding: 10px 30px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.5rem;
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-20px);}
+            60% {transform: translateY(-10px);}
+        }
+
+        /* جزيئات طائرة */
+        .sparkle {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background: white;
+            border-radius: 50%;
+            animation: fly 5s infinite linear;
+        }
+
+        @keyframes fly {
+            0% { transform: translateY(100vh) translateX(0); opacity: 1; }
+            100% { transform: translateY(-100vh) translateX(100px); opacity: 0; }
+        }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
+<body>
 
-    <button onclick="toggleLanguage()" class="absolute top-5 right-5 bg-white px-4 py-2 rounded-shadow hover:bg-gray-200 transition">
-        English / عربي
-    </button>
+    <div class="lights"></div>
 
-    <div class="bg-white p-8 rounded-xl shadow-2xl max-w-md w-full text-center">
-        <h1 id="title" class="text-2xl font-bold mb-6 text-gray-800">محول الصور السريع</h1>
-        <p id="desc" class="text-gray-600 mb-6">ارفع صورتك لتحويلها فوراً (مجاني 100%)</p>
-
-        <div class="border-2 border-dashed border-blue-400 rounded-lg p-10 mb-6 cursor-pointer hover:bg-blue-50 transition" onclick="document.getElementById('fileInput').click()">
-            <input type="file" id="fileInput" class="hidden" accept="image/*">
-            <span id="uploadText" class="text-blue-500">اضغط هنا لرفع الصورة</span>
-        </div>
-
-        <canvas id="canvas" class="hidden max-w-full h-auto rounded shadow mb-4"></canvas>
-
-        <div id="actions" class="hidden">
-            <button id="downloadBtn" class="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition w-full">حفظ الصورة</button>
-        </div>
+    <div class="container">
+        <div class="stickers">⚡🔥👑</div>
+        <h1>تحية القوة والفخر</h1>
+        <p>إلى الأستاذ الغالي:</p>
+        <div class="name">محمد هائل احمد محمد سعيد</div>
+        <div class="stickers">💪✨🚀</div>
+        <div class="power-badge">أنت الأقوى دائماً!</div>
     </div>
 
     <script>
-        let currentLang = 'ar';
-        const translations = {
-            ar: { title: "محول الصور السريع", desc: "ارفع صورتك لتحويلها فوراً (مجاني 100%)", upload: "اضغط هنا لرفع الصورة", download: "حفظ الصورة المعالجة" },
-            en: { title: "Fast Image Converter", desc: "Upload your image to convert instantly (100% Free)", upload: "Click here to upload image", download: "Save Processed Image" }
-        };
-
-        function toggleLanguage() {
-            currentLang = currentLang === 'ar' ? 'en' : 'ar';
-            document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
-            document.getElementById('title').innerText = translations[currentLang].title;
-            document.getElementById('desc').innerText = translations[currentLang].desc;
-            document.getElementById('uploadText').innerText = translations[currentLang].upload;
-            document.getElementById('downloadBtn').innerText = translations[currentLang].download;
+        for (let i = 0; i < 50; i++) {
+            let sparkle = document.createElement('div');
+            sparkle.className = 'sparkle';
+            sparkle.style.left = Math.random() * 100 + 'vw';
+            sparkle.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            sparkle.style.delay = Math.random() * 5 + 's';
+            document.body.appendChild(sparkle);
         }
-
-        const fileInput = document.getElementById('fileInput');
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        const actions = document.getElementById('actions');
-        const downloadBtn = document.getElementById('downloadBtn');
-
-        fileInput.onchange = function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const img = new Image();
-                img.onload = function() {
-                    // إعداد الكانفاس (اللوحة)
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    canvas.classList.remove('hidden');
-                    actions.classList.remove('hidden');
-
-                    // رسم الصورة وتحويلها للأبيض والأسود (المعالجة)
-                    ctx.filter = 'grayscale(100%)';
-                    ctx.drawImage(img, 0, 0);
-                };
-                img.src = event.target.result;
-            };
-            reader.readAsDataURL(file);
-        };
-
-        downloadBtn.onclick = function() {
-            const link = document.createElement('a');
-            link.download = 'converted-image.png';
-            link.href = canvas.toDataURL();
-            link.click();
-        };
     </script>
 </body>
 </html>
