@@ -2,12 +2,18 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>تحية خاصة لمحمد هائل</title>
+    <title>تهنئة زفاف محمد هائل</title>
     <style>
+        :root {
+            --gold: #d4af37;
+            --dark-gold: #aa892e;
+            --white: #ffffff;
+        }
+
         body {
-            background-color: #0a0a0a;
-            color: white;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(circle, #1a1a1a 0%, #000000 100%);
+            color: var(--white);
+            font-family: 'Amiri', serif, Tahoma;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -17,110 +23,177 @@
             text-align: center;
         }
 
-        /* خلفية الأضواء المتحركة */
-        .lights {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, rgba(255,215,0,0.1) 0%, rgba(0,0,0,1) 70%);
-            z-index: -1;
-            animation: pulse 3s infinite alternate;
-        }
-
-        @keyframes pulse {
-            from { opacity: 0.5; }
-            to { opacity: 1; }
+        /* ستارة الأضواء الخلفية */
+        .stars {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
         }
 
         .container {
-            border: 5px solid #ffd700;
-            padding: 50px;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.05);
-            box-shadow: 0 0 50px #ffd700;
-            position: relative;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 40px;
+            border: 2px solid var(--gold);
+            border-radius: 50px 0 50px 0;
+            box-shadow: 0 0 30px var(--gold);
+            backdrop-filter: blur(10px);
+            max-width: 500px;
+            width: 90%;
         }
 
         h1 {
-            font-size: 3.5rem;
-            color: #ffd700;
-            text-shadow: 0 0 20px #ff0000, 0 0 30px #ffd700;
-            margin-bottom: 10px;
-            animation: glow 1.5s ease-in-out infinite alternate;
-        }
-
-        @keyframes glow {
-            from { text-shadow: 0 0 20px #ff0000; }
-            to { text-shadow: 0 0 40px #ffd700, 0 0 10px #fff; }
-        }
-
-        .name {
+            color: var(--gold);
             font-size: 2.5rem;
-            color: #00fbff;
-            display: block;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px var(--gold);
+        }
+
+        .input-box {
             margin-top: 20px;
-            font-weight: bold;
         }
 
-        .stickers {
-            font-size: 4rem;
-            margin: 20px 0;
+        input {
+            padding: 15px;
+            width: 80%;
+            border-radius: 25px;
+            border: 2px solid var(--gold);
+            background: transparent;
+            color: white;
+            text-align: center;
+            font-size: 1.2rem;
+            outline: none;
         }
 
-        .power-badge {
-            display: inline-block;
-            background: linear-gradient(45deg, #ff0000, #ffd700);
+        button {
+            margin-top: 20px;
             padding: 10px 30px;
-            border-radius: 50px;
+            border-radius: 25px;
+            border: none;
+            background: linear-gradient(45deg, var(--gold), #fff);
+            color: black;
             font-weight: bold;
-            font-size: 1.5rem;
-            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
-            animation: bounce 2s infinite;
+            cursor: pointer;
+            transition: 0.3s;
         }
 
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
-            40% {transform: translateY(-20px);}
-            60% {transform: translateY(-10px);}
+        button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px var(--gold);
         }
 
-        /* جزيئات طائرة */
-        .sparkle {
+        /* منطقة النتيجة - مخفية في البداية */
+        #celebration {
+            display: none;
+            animation: fadeIn 2s ease-in-out forwards;
+        }
+
+        .heart-icon {
+            color: #ff0000;
+            font-size: 3rem;
+            animation: beat 0.8s infinite alternate;
+        }
+
+        @keyframes beat {
+            to { transform: scale(1.2); }
+        }
+
+        .couple-names {
+            font-size: 2.2rem;
+            margin: 20px 0;
+            font-weight: bold;
+            line-height: 1.6;
+        }
+
+        .highlight {
+            color: var(--gold);
+            display: block;
+            text-shadow: 0 0 15px var(--gold);
+        }
+
+        .message {
+            font-size: 1.3rem;
+            font-style: italic;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* جزيئات القلوب المتطايرة */
+        .heart-particle {
             position: absolute;
-            width: 5px;
-            height: 5px;
-            background: white;
-            border-radius: 50%;
-            animation: fly 5s infinite linear;
+            color: var(--gold);
+            font-size: 20px;
+            pointer-events: none;
+            animation: flyUp 4s linear infinite;
         }
 
-        @keyframes fly {
-            0% { transform: translateY(100vh) translateX(0); opacity: 1; }
-            100% { transform: translateY(-100vh) translateX(100px); opacity: 0; }
+        @keyframes flyUp {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
         }
     </style>
 </head>
 <body>
 
-    <div class="lights"></div>
+    <div class="stars" id="starCanvas"></div>
 
-    <div class="container">
-        <div class="stickers">⚡🔥👑</div>
-        <h1>تحية القوة والفخر</h1>
-        <p>إلى الأستاذ الغالي:</p>
-        <div class="name">محمد هائل احمد محمد سعيد</div>
-        <div class="stickers">💪✨🚀</div>
-        <div class="power-badge">أنت الأقوى دائماً!</div>
+    <div class="container" id="mainContainer">
+        <div id="inputArea">
+            <h1>ألف مبروك يا عريس 💍</h1>
+            <p>أدخل اسمك يا بطل لمشاهدة المفاجأة:</p>
+            <input type="text" id="userName" placeholder="اكتب اسمك هنا...">
+            <br>
+            <button onclick="startCelebration()">عرض التهنية الملكية</button>
+        </div>
+
+        <div id="celebration">
+            <div class="heart-icon">❤️</div>
+            <h1>تم عقد القران المبارك</h1>
+            <div class="couple-names">
+                <span class="highlight">محمد هائل احمد محمد سعيد</span>
+                <span>&</span>
+                <span class="highlight" id="brideNameDisplay">شريكة حياته الغالية</span>
+            </div>
+            <div class="message">
+                "بارك الله لكما وبارك عليكما وجمع بينكما في خير"
+                <br><br>
+                ✨ ليلة من ألف ليلة وليلة ✨
+            </div>
+            <div style="font-size: 3rem; margin-top: 20px;">👑💍🥂</div>
+        </div>
     </div>
 
     <script>
-        for (let i = 0; i < 50; i++) {
-            let sparkle = document.createElement('div');
-            sparkle.className = 'sparkle';
-            sparkle.style.left = Math.random() * 100 + 'vw';
-            sparkle.style.animationDuration = (Math.random() * 3 + 2) + 's';
-            sparkle.style.delay = Math.random() * 5 + 's';
-            document.body.appendChild(sparkle);
+        function startCelebration() {
+            const name = document.getElementById('userName').value;
+            if (name.trim() === "") {
+                alert("يرجى كتابة الاسم أولاً!");
+                return;
+            }
+
+            // إخفاء منطقة الإدخال وإظهار الاحتفال
+            document.getElementById('inputArea').style.display = 'none';
+            document.getElementById('celebration').style.display = 'block';
+
+            // إنشاء تأثير القلوب المتطايرة
+            setInterval(createHeart, 200);
+        }
+
+        function createHeart() {
+            const heart = document.createElement('div');
+            heart.classList.add('heart-particle');
+            heart.innerHTML = '✨'; // يمكن تغييرها لـ ❤️
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.animationDuration = (Math.random() * 2 + 3) + 's';
+            document.body.appendChild(heart);
+            
+            setTimeout(() => {
+                heart.remove();
+            }, 4000);
         }
     </script>
 </body>
