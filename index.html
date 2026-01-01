@@ -1,202 +1,109 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<!DOCTYPE html><html lang="ar">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سيلفي محطة الفضاء الدولية</title>
-    <style>
-        body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Courier New', monospace; }
-        #canvas-container { width: 100%; height: 100vh; }
-        
-        /* واجهة المستخدم */
-        .nasa-interface {
-            position: absolute;
-            top: 20px; right: 20px;
-            background: rgba(0, 20, 40, 0.8);
-            border: 1px solid #00f2ff;
-            color: #00f2ff;
-            padding: 15px;
-            border-radius: 5px;
-            z-index: 100;
-            width: 260px;
-            pointer-events: auto;
-        }
-
-        .upload-area {
-            border: 2px dashed #00f2ff;
-            padding: 15px;
-            text-align: center;
-            margin: 10px 0;
-            cursor: pointer;
-        }
-
-        .capture-btn {
-            width: 100%;
-            background: #fc3d21;
-            color: white;
-            border: none;
-            padding: 10px;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-        }
-
-        #loading {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: black; display: flex; justify-content: center; align-items: center;
-            z-index: 1000; color: white;
-        }
-
-        .status-bar {
-            position: absolute;
-            bottom: 20px; left: 20px;
-            color: #00f2ff;
-            font-size: 12px;
-            background: rgba(0,0,0,0.5);
-            padding: 5px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Earth From Space</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: radial-gradient(circle at bottom, #020111 0%, #000000 70%);
+      font-family: Arial, sans-serif;
+    }
+    #hint {
+      position: absolute;
+      bottom: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #aaa;
+      font-size: 14px;
+      opacity: 0.8;
+    }
+  </style>
 </head>
 <body>
+  <div id="hint">🌍 Earth viewed from space — rotating naturally</div>  <!-- Three.js -->  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>  <script>
+    // Scene
+    const scene = new THREE.Scene();
 
-    <div id="loading">جاري الاتصال بكاميرا الذراع الآلي للمحطة...</div>
+    // Camera
+    const camera = new THREE.PerspectiveCamera(
+      45,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
+    camera.position.z = 3.2;
 
-    <div class="nasa-interface">
-        <h2 style="margin: 0; font-size: 18px;">MISSION: SELFIE</h2>
-        <p style="font-size: 11px;">1. دور الأرض لاختيار موقعك.<br>2. ارفع صورتك لتظهر على جسم المحطة.</p>
-        
-        <label class="upload-area" for="imgInput">
-            <span id="labelTxt">اضغط لرفع صورتك</span>
-            <input type="file" id="imgInput" accept="image/*" style="display:none">
-        </label>
+    // Renderer
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    document.body.appendChild(renderer.domElement);
 
-        <button class="capture-btn" onclick="takeCapture()">التقاط الصورة الحقيقية</button>
-    </div>
+    // Texture Loader
+    const loader = new THREE.TextureLoader();
 
-    <div class="status-bar">
-        ISS EXTERIOR CAM 07 | ALT: 402KM | STS: OK
-    </div>
+    // Earth
+    const earthGeometry = new THREE.SphereGeometry(1, 64, 64);
+    const earthMaterial = new THREE.MeshPhongMaterial({
+      map: loader.load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg'),
+      normalMap: loader.load('https://threejs.org/examples/textures/planets/earth_normal_2048.jpg'),
+      specularMap: loader.load('https://threejs.org/examples/textures/planets/earth_specular_2048.jpg'),
+      specular: new THREE.Color('grey')
+    });
+    const earth = new THREE.Mesh(earthGeometry, earthMaterial);
+    scene.add(earth);
 
-    <div id="canvas-container"></div>
+    // Atmosphere (Glow)
+    const atmosphereGeometry = new THREE.SphereGeometry(1.03, 64, 64);
+    const atmosphereMaterial = new THREE.MeshBasicMaterial({
+      color: 0x3fa9f5,
+      transparent: true,
+      opacity: 0.15
+    });
+    const atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
+    scene.add(atmosphere);
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    // Stars background
+    const starsGeometry = new THREE.BufferGeometry();
+    const starsCount = 10000;
+    const positions = [];
+    for (let i = 0; i < starsCount; i++) {
+      positions.push(
+        (Math.random() - 0.5) * 2000,
+        (Math.random() - 0.5) * 2000,
+        -Math.random() * 2000
+      );
+    }
+    starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    const starsMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.7 });
+    const stars = new THREE.Points(starsGeometry, starsMaterial);
+    scene.add(stars);
 
-    <script>
-        let scene, camera, renderer, controls, earth, userScreen;
+    // Light (Sun)
+    const light = new THREE.DirectionalLight(0xffffff, 1.2);
+    light.position.set(5, 2, 5);
+    scene.add(light);
 
-        function init() {
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 2000);
-            camera.position.set(15, 8, 20);
+    const ambientLight = new THREE.AmbientLight(0x222222);
+    scene.add(ambientLight);
 
-            renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
-            renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            document.getElementById('canvas-container').appendChild(renderer.domElement);
+    // Animation
+    function animate() {
+      requestAnimationFrame(animate);
+      earth.rotation.y += 0.0008; // realistic rotation
+      atmosphere.rotation.y += 0.0009;
+      stars.rotation.y += 0.0001;
+      renderer.render(scene, camera);
+    }
+    animate();
 
-            controls = new THREE.OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-            controls.minDistance = 10;
-            controls.maxDistance = 40;
-
-            // إضاءة الشمس القوية (واقعية)
-            const sun = new THREE.DirectionalLight(0xffffff, 1.8);
-            sun.position.set(20, 15, 20);
-            scene.add(sun);
-            scene.add(new THREE.AmbientLight(0x222222));
-
-            const loader = new THREE.TextureLoader();
-
-            // 1. كوكب الأرض (الخلفية)
-            const earthGeo = new THREE.SphereGeometry(100, 64, 64);
-            const earthMat = new THREE.MeshStandardMaterial({
-                map: loader.load('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg'),
-                bumpMap: loader.load('https://unpkg.com/three-globe/example/img/earth-topology.png'),
-                bumpScale: 1
-            });
-            earth = new THREE.Mesh(earthGeo, earthMat);
-            earth.position.set(0, -115, -50); // الأرض ضخمة في الخلفية
-            scene.add(earth);
-
-            // 2. جسم المحطة الفضائية (هيكل معدني)
-            const stationGroup = new THREE.Group();
-            
-            // الهيكل الرئيسي
-            const coreGeo = new THREE.CylinderGeometry(2, 2, 12, 32);
-            const metalMat = new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 0.9, roughness: 0.1 });
-            const core = new THREE.Mesh(coreGeo, metalMat);
-            core.rotation.z = Math.PI/2;
-            stationGroup.add(core);
-
-            // الألواح الشمسية الضخمة
-            const panelGeo = new THREE.BoxGeometry(0.2, 5, 18);
-            const panelMat = new THREE.MeshStandardMaterial({ color: 0x002244, emissive: 0x011122 });
-            const panels = new THREE.Mesh(panelGeo, panelMat);
-            panels.position.set(0, 0, 0);
-            stationGroup.add(panels);
-
-            // 3. شاشة المستخدم (مثبتة على جسم المحطة)
-            const screenGeo = new THREE.PlaneGeometry(3.5, 4.5);
-            const screenMat = new THREE.MeshBasicMaterial({ color: 0x111111, side: THREE.DoubleSide });
-            userScreen = new THREE.Mesh(screenGeo, screenMat);
-            userScreen.position.set(0, 3, 2); // فوق الهيكل
-            userScreen.rotation.x = -0.3;
-            stationGroup.add(userScreen);
-
-            scene.add(stationGroup);
-
-            // نجوم
-            const starGeo = new THREE.BufferGeometry();
-            const starPos = [];
-            for(let i=0; i<10000; i++) starPos.push((Math.random()-0.5)*1500, (Math.random()-0.5)*1500, (Math.random()-0.5)*1500);
-            starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
-            scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({color: 0xffffff, size: 0.7})));
-
-            window.addEventListener('resize', onResize);
-            document.getElementById('loading').style.display = 'none';
-            animate();
-        }
-
-        document.getElementById('imgInput').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const texture = new THREE.TextureLoader().load(event.target.result);
-                    userScreen.material.map = texture;
-                    userScreen.material.color.set(0xffffff);
-                    userScreen.material.needsUpdate = true;
-                    document.getElementById('labelTxt').innerText = "تم الرفع بنجاح!";
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        function takeCapture() {
-            renderer.render(scene, camera);
-            const link = document.createElement('a');
-            link.download = 'ISS-Space-Selfie.png';
-            link.href = renderer.domElement.toDataURL();
-            link.click();
-        }
-
-        function onResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            earth.rotation.y += 0.0005; // دوران بطيء جداً للأرض
-            controls.update();
-            renderer.render(scene, camera);
-        }
-
-        init();
-    </script>
-</body>
+    // Resize
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script></body>
 </html>
