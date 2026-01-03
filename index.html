@@ -2,81 +2,115 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <title>محاكاة محطة الفضاء الدولية</title>
+    <title>محاكاة محطة الفضاء الدولية - ISS</title>
     <style>
         body {
             margin: 0;
             padding: 0;
-            background-color: #050505; /* لون الفضاء الأسود */
-            overflow: hidden; /* لمنع ظهور أشرطة التمرير */
-        }
-
-        /* خلفية الفضاء والنجوم */
-        .space {
-            position: relative;
-            width: 100vw;
+            background-color: #00050a;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             height: 100vh;
-            background-image: radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px);
-            background-size: 200px 200px;
         }
 
-        /* كوكب الأرض */
+        /* خلفية النجوم */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://www.transparenttextures.com/patterns/stardust.png');
+            z-index: -1;
+        }
+
+        /* حاوية الفضاء */
+        .space-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            perspective: 1000px;
+        }
+
+        /* كوكب الأرض بشكل احترافي */
         .earth {
             position: absolute;
-            bottom: -200px;
+            bottom: -400px; /* جعل الأرض كبيرة في الأسفل */
             left: 50%;
             transform: translateX(-50%);
-            width: 800px;
-            height: 800px;
-            background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Earth_Western_Hemisphere_transparent_background.png/600px-Earth_Western_Hemisphere_transparent_background.png') no-repeat center;
-            background-size: contain;
+            width: 1000px;
+            height: 1000px;
+            background: url('https://upload.wikimedia.org/wikipedia/commons/2/22/Earth_Western_Hemisphere_transparent_background.png') no-repeat center;
+            background-size: cover;
             border-radius: 50%;
-            box-shadow: 0 0 50px rgba(0, 150, 255, 0.4);
-            animation: rotateEarth 100s linear infinite;
+            box-shadow: inset -20px -20px 50px rgba(0,0,0,0.8), 
+                        0 0 60px rgba(0, 140, 255, 0.5);
+            animation: rotateEarth 200s linear infinite;
         }
 
-        /* محطة الفضاء الدولية */
+        /* محطة الفضاء الدولية - صورة حقيقية */
         .iss {
             position: absolute;
-            width: 120px;
-            top: 20%;
-            left: -150px; /* تبدأ من خارج الشاشة */
-            animation: orbit 15s linear infinite;
+            width: 180px; /* حجم أوضح للمحطة */
+            z-index: 10;
+            filter: drop-shadow(0 0 10px rgba(255,255,255,0.3));
+            animation: orbitPath 20s ease-in-out infinite;
         }
 
-        /* أنميشن دوران الأرض حول نفسها ببطء */
+        /* حركة المدار فوق الأرض */
+        @keyframes orbitPath {
+            0% {
+                left: -20%;
+                top: 20%;
+                transform: rotate(15deg) scale(0.7);
+            }
+            50% {
+                left: 40%;
+                top: 10%;
+                transform: rotate(0deg) scale(1); /* تكبر قليلاً لتظهر أنها قريبة */
+            }
+            100% {
+                left: 120%;
+                top: 25%;
+                transform: rotate(-15deg) scale(0.7);
+            }
+        }
+
+        /* دوران الأرض */
         @keyframes rotateEarth {
             from { transform: translateX(-50%) rotate(0deg); }
             to { transform: translateX(-50%) rotate(360deg); }
         }
 
-        /* أنميشن حركة المحطة فوق الأرض */
-        @keyframes orbit {
-            0% {
-                left: -150px;
-                top: 30%;
-                transform: scale(0.8) rotate(10deg);
-            }
-            50% {
-                top: 20%;
-                transform: scale(1) rotate(0deg);
-            }
-            100% {
-                left: 110vw;
-                top: 35%;
-                transform: scale(0.8) rotate(-10deg);
-            }
+        /* نص توضيحي */
+        .info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            font-family: Arial, sans-serif;
+            background: rgba(0,0,0,0.5);
+            padding: 10px;
+            border-radius: 5px;
+            border-right: 4px solid #008cff;
         }
     </style>
 </head>
 <body>
 
-    <div class="space">
+    <div class="stars"></div>
+
+    <div class="space-container">
+        <div class="info">محاكاة محطة الفضاء الدولية (ISS)</div>
+        
         <div class="earth"></div>
 
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/ISS_emblem.png/600px-ISS_emblem.png" 
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/ISS_emblem.png/800px-ISS_emblem.png" 
              alt="ISS" class="iss">
-    </div>
+             
+        </div>
 
 </body>
 </html>
