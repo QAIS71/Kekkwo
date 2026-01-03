@@ -3,113 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>المحطة الدولية - النسخة النهائية</title>
+    <title>محاكاة مدارية واقعية</title>
     <style>
-        body {
-            margin: 0;
-            background: radial-gradient(circle at center, #001529 0%, #000 100%);
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-
-        /* كوكب الأرض مرسوم برمجياً */
-        .earth-sphere {
-            position: relative;
-            width: 250px;
-            height: 250px;
-            background: #2271b1;
-            border-radius: 50%;
-            box-shadow: inset -20px -20px 50px #000, 0 0 40px rgba(0, 162, 255, 0.6);
-            overflow: hidden;
-            z-index: 5;
-        }
-
-        /* إضافة قارات وهمية داخل الأرض لتبدو حقيقية */
-        .earth-sphere::before {
-            content: '';
-            position: absolute;
-            width: 200%;
-            height: 100%;
-            background: rgba(34, 139, 34, 0.6);
-            border-radius: 40%;
-            filter: blur(10px);
-            animation: moveClouds 20s linear infinite;
-        }
-
-        /* مدار المحطة */
-        .orbit-container {
-            position: absolute;
-            width: 450px;
-            height: 450px;
-            animation: rotateOrbit 15s linear infinite;
-            z-index: 10;
-        }
-
-        /* شكل المحطة الدولية (رسم هندسي دقيق) */
-        .iss-design {
-            position: absolute;
-            top: 50%;
-            left: -20px;
-            transform: translateY(-50%);
-            display: flex;
-            align-items: center;
-        }
-
-        /* الألواح الشمسية */
-        .solar-panel {
-            width: 40px;
-            height: 15px;
-            background: #444;
-            border: 1px solid #666;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-        }
-        .solar-panel div { border: 0.1px solid #222; }
-
-        .iss-body {
-            width: 25px;
-            height: 10px;
-            background: #eee;
-            margin: 0 2px;
-            border-radius: 2px;
-        }
-
-        @keyframes rotateOrbit {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        @keyframes moveClouds {
-            from { left: -100%; }
-            to { left: 0%; }
-        }
-
-        .title {
-            position: fixed;
-            top: 30px;
-            color: #fff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            letter-spacing: 1px;
-            text-shadow: 0 0 10px #00a2ff;
-        }
+        body { margin: 0; background: #000408; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        canvas { display: block; }
+        .info { position: fixed; top: 20px; color: #4fc3f7; font-family: sans-serif; text-shadow: 0 0 10px #000; pointer-events: none; }
     </style>
 </head>
 <body>
 
-    <div class="title">المحطة الدولية في مدارها الصحيح 🛰️</div>
+    <div class="info">محاكاة حقيقية للمحطة الدولية فوق كوكب الأرض</div>
+    <canvas id="spaceCanvas"></canvas>
 
-    <div class="earth-sphere"></div>
+    <script>
+        const canvas = document.getElementById('spaceCanvas');
+        const ctx = canvas.getContext('2d');
 
-    <div class="orbit-container">
-        <div class="iss-design">
-            <div class="solar-panel"><div></div><div></div><div></div><div></div></div>
-            <div class="iss-body"></div>
-            <div class="solar-panel"><div></div><div></div><div></div><div></div></div>
-        </div>
-    </div>
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
 
+        let angle = 0;
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+
+            // 1. رسم النجوم في الخلفية
+            ctx.fillStyle = "white";
+            for(let i=0; i<100; i++) {
+                let x = Math.sin(i) * centerX + centerX;
+                let y = Math.cos(i) * centerY + centerY;
+                ctx.fillRect(x, y, 1, 1);
+            }
+
+            // 2. رسم كوكب الأرض (تدرج لوني واقعي)
+            const earthRadius = 120;
+            const gradient = ctx.createRadialGradient(centerX - 30, centerY - 30, 20, centerX, centerY, earthRadius);
+            gradient.addColorStop(0, '#4fc3f7'); // أزرق فاتح (شمس)
+            gradient.addColorStop(0.5, '#1565c0'); // أزرق المحيط
+            gradient.addColorStop(1, '#000'); // طرف مظلم
+
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, earthRadius, 0, Math.PI * 2);
+            ctx.fillStyle = gradient;
+            ctx.shadowBlur = 40;
+            ctx.shadowColor = "#1565c0";
+            ctx.fill();
+
+            // 3. حساب مسار المحطة (المدار)
+            const orbitRadius = 200;
+            const issX = centerX + Math.cos(angle) * orbitRadius;
+            const issY = centerY + Math.sin(angle) * orbitRadius;
+
+            // 4. رسم المحطة الدولية (هيكل معدني)
+            ctx.shadowBlur = 0; // إيقاف التوهج للمحطة لتكون حادة
+            ctx.save();
+            ctx.translate(issX, issY);
+            ctx.rotate(angle + Math.PI / 2);
+
+            // الألواح الشمسية (ذهبية/سوداء واقعية)
+            ctx.fillStyle = "#333"; 
+            ctx.fillRect(-40, -5, 80, 15); // الألواح
+            ctx.strokeStyle = "#ffd700";
+            ctx.lineWidth = 0.5;
+            ctx.strokeRect(-40, -5, 80, 15);
+
+            // جسم المحطة (أبيض معدني)
+            ctx.fillStyle = "#eee";
+            ctx.fillRect(-5, -15, 10, 30);
+            
+            ctx.restore();
+
+            angle += 0.01; // سرعة الدوران
+            requestAnimationFrame(draw);
+        }
+
+        draw();
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
 </body>
 </html>
