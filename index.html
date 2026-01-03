@@ -1,42 +1,80 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <title>محاكاة المحطة الدولية - النسخة المضمونة</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المحطة الدولية - النسخة النهائية</title>
     <style>
-        body { margin: 0; background: #000; overflow: hidden; font-family: sans-serif; }
-        
-        /* نجوم ثابتة */
-        .stars {
-            position: fixed; width: 100%; height: 100%;
-            background: radial-gradient(white, rgba(255,255,255,.2) 1px, transparent 20px);
-            background-size: 50px 50px;
+        body {
+            margin: 0;
+            background: radial-gradient(circle at center, #001529 0%, #000 100%);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
 
-        /* كوكب الأرض */
-        .earth {
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 300px; height: 300px;
-            background: radial-gradient(circle at 30% 30%, #2b82c9, #000);
+        /* كوكب الأرض مرسوم برمجياً */
+        .earth-sphere {
+            position: relative;
+            width: 250px;
+            height: 250px;
+            background: #2271b1;
             border-radius: 50%;
-            box-shadow: 0 0 50px #004e89;
+            box-shadow: inset -20px -20px 50px #000, 0 0 40px rgba(0, 162, 255, 0.6);
+            overflow: hidden;
             z-index: 5;
         }
 
-        /* حاوية المحطة للمدار */
-        .orbit-path {
-            position: absolute; top: 50%; left: 50%;
-            width: 500px; height: 500px;
-            margin-top: -250px; margin-left: -250px;
-            animation: rotateOrbit 10s linear infinite;
+        /* إضافة قارات وهمية داخل الأرض لتبدو حقيقية */
+        .earth-sphere::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 100%;
+            background: rgba(34, 139, 34, 0.6);
+            border-radius: 40%;
+            filter: blur(10px);
+            animation: moveClouds 20s linear infinite;
+        }
+
+        /* مدار المحطة */
+        .orbit-container {
+            position: absolute;
+            width: 450px;
+            height: 450px;
+            animation: rotateOrbit 15s linear infinite;
             z-index: 10;
         }
 
-        /* رسم المحطة برمجياً (SVG) لضمان ظهورها */
-        .iss-svg {
-            width: 80px; height: 80px;
-            transform: rotate(45deg);
+        /* شكل المحطة الدولية (رسم هندسي دقيق) */
+        .iss-design {
+            position: absolute;
+            top: 50%;
+            left: -20px;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+        }
+
+        /* الألواح الشمسية */
+        .solar-panel {
+            width: 40px;
+            height: 15px;
+            background: #444;
+            border: 1px solid #666;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+        }
+        .solar-panel div { border: 0.1px solid #222; }
+
+        .iss-body {
+            width: 25px;
+            height: 10px;
+            background: #eee;
+            margin: 0 2px;
+            border-radius: 2px;
         }
 
         @keyframes rotateOrbit {
@@ -44,25 +82,34 @@
             to { transform: rotate(360deg); }
         }
 
-        .label {
-            position: fixed; top: 20px; width: 100%; text-align: center;
-            color: #00d4ff; font-weight: bold; text-shadow: 0 0 10px #000;
+        @keyframes moveClouds {
+            from { left: -100%; }
+            to { left: 0%; }
+        }
+
+        .title {
+            position: fixed;
+            top: 30px;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px #00a2ff;
         }
     </style>
 </head>
 <body>
 
-<div class="stars"></div>
-<div class="label">المحطة الدولية تدور حول الأرض (نسخة الكود المباشر)</div>
+    <div class="title">المحطة الدولية في مدارها الصحيح 🛰️</div>
 
-<div class="earth"></div>
+    <div class="earth-sphere"></div>
 
-<div class="orbit-path">
-    <svg class="iss-svg" viewBox="0 0 100 100">
-        <rect x="10" y="45" width="80" height="10" fill="#ddd" /> <rect x="40" y="20" width="20" height="60" fill="#fff" /> <circle cx="50" cy="50" r="8" fill="#555" /> <rect x="15" y="40" width="10" height="20" fill="#555" />
-        <rect x="75" y="40" width="10" height="20" fill="#555" />
-    </svg>
-</div>
+    <div class="orbit-container">
+        <div class="iss-design">
+            <div class="solar-panel"><div></div><div></div><div></div><div></div></div>
+            <div class="iss-body"></div>
+            <div class="solar-panel"><div></div><div></div><div></div><div></div></div>
+        </div>
+    </div>
 
 </body>
 </html>
