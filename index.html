@@ -3,321 +3,258 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سيلفي محطة الفضاء</title>
+    <title>صورتك في الفضاء - محطة ناسا</title>
     <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            background-color: #000;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            user-select: none;
-        }
+        body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #000; }
         
-        /* واجهة المستخدم العائمة */
+        /* واجهة المستخدم فوق الـ 3D */
         #ui-container {
             position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 100;
+            top: 0; right: 0; width: 100%; height: 100%;
+            pointer-events: none; /* يسمح بالنقر على الـ 3D */
             display: flex;
-            gap: 20px;
-            background: rgba(0, 0, 0, 0.6);
-            padding: 15px;
-            border-radius: 30px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
-        .btn {
-            background: linear-gradient(45deg, #00aaff, #0066cc);
-            border: none;
+        .controls {
+            pointer-events: auto;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 15px;
             color: white;
-            padding: 12px 25px;
-            border-radius: 25px;
+            max-width: 300px;
+            border: 1px solid #444;
+        }
+
+        button, input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            border: none;
             cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button { background: #007bff; color: white; font-weight: bold; }
+        button:hover { background: #0056b3; }
+        
+        /* مكان الإعلانات */
+        #adsense-banner {
+            pointer-events: auto;
+            background: white;
+            width: 728px;
+            height: 90px;
+            margin: 0 auto;
             display: flex;
             align-items: center;
-            gap: 10px;
+            justify-content: center;
+            color: black;
+            font-weight: bold;
         }
 
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 170, 255, 0.4);
-        }
-
-        .btn-capture {
-            background: linear-gradient(45deg, #ff4444, #cc0000);
-        }
-
-        .btn-capture:hover {
-            box-shadow: 0 5px 15px rgba(255, 68, 68, 0.4);
-        }
-
-        #info {
+        /* قائمة اللغات */
+        #lang-select {
+            pointer-events: auto;
             position: absolute;
             top: 20px;
-            width: 100%;
-            text-align: center;
-            color: white;
-            pointer-events: none;
-            text-shadow: 0 0 10px rgba(0,0,0,0.8);
+            left: 20px;
+            padding: 10px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 5px;
         }
 
-        #file-input { display: none; }
-
-        /* أيقونات بسيطة */
-        .icon { font-size: 1.2em; }
-
-        /* شاشة التحميل */
-        #loader {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: #00aaff;
-            z-index: 999;
-            transition: opacity 0.5s;
+        /* رسالة التحميل */
+        #loading {
+            position: absolute; top: 50%; left: 50%; 
+            transform: translate(-50%, -50%); 
+            color: white; font-size: 24px;
         }
     </style>
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
-            }
-        }
-    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 </head>
 <body>
 
-    <div id="loader">جاري تجهيز منصة الإطلاق...</div>
+    <div id="loading">جاري تحميل المحطة الفضائية...</div>
 
-    <div id="info">
-        <h1>سيلفي الفضاء</h1>
-        <p>ارفع صورتك لتظهر بجانب المحطة، ثم التقط الصورة!</p>
-    </div>
-
-    <!-- أزرار التحكم -->
     <div id="ui-container">
-        <input type="file" id="file-input" accept="image/*">
-        <button class="btn" onclick="document.getElementById('file-input').click()">
-            <span class="icon">📷</span> رفع صورتك
-        </button>
-        <button class="btn btn-capture" id="save-btn">
-            <span class="icon">📸</span> التقاط وحفظ
-        </button>
+        
+        <select id="lang-select" onchange="changeLanguage()">
+            <option value="ar">العربية</option>
+            <option value="en">English</option>
+            <option value="fr">Français</option>
+            <option value="es">Español</option>
+            <option value="de">Deutsch</option>
+            </select>
+
+        <div class="controls">
+            <h2 id="title-text">ارفع صورتك للمحطة</h2>
+            <p id="desc-text">ستظهر صورتك على شاشة المحطة الفضائية وتدور حول الأرض.</p>
+            <input type="file" id="imageUpload" accept="image/*">
+            <button onclick="takeSnapshot()" id="btn-snap">التقاط صورة عالية الدقة</button>
+        </div>
+
+        <div id="adsense-banner">
+            مساحة إعلانية (Google AdSense)
+        </div>
     </div>
 
-    <script type="module">
-        import * as THREE from 'three';
-        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-
-        // --- إعداد المشهد ---
+    <script>
+        // 1. إعداد المشهد (Scene Setup)
         const scene = new THREE.Scene();
-        
-        // الكاميرا
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 0, 5);
-
-        // الريندر (مع تفعيل preserveDrawingBuffer لالتقاط الصور)
-        const renderer = new THREE.WebGLRenderer({ 
-            antialias: true, 
-            alpha: true, 
-            preserveDrawingBuffer: true 
-        });
+        const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true }); // preserveDrawingBuffer مهم لالتقاط الصورة
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
         document.body.appendChild(renderer.domElement);
 
-        const controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.minDistance = 2;
-        controls.maxDistance = 10;
-
-        // --- الإضاءة ---
-        const ambientLight = new THREE.AmbientLight(0xffffff, 2.0);
+        // 2. إضاءة المشهد
+        const ambientLight = new THREE.AmbientLight(0x333333);
         scene.add(ambientLight);
-        
-        const sunLight = new THREE.DirectionalLight(0xffffff, 1.5);
+        const sunLight = new THREE.DirectionalLight(0xffffff, 1);
         sunLight.position.set(5, 3, 5);
         scene.add(sunLight);
 
-        // --- مدير التحميل ---
-        const manager = new THREE.LoadingManager();
-        manager.onLoad = () => {
-            const loader = document.getElementById('loader');
-            loader.style.opacity = 0;
-            setTimeout(() => loader.remove(), 500);
-        };
-        const textureLoader = new THREE.TextureLoader(manager);
+        // 3. إنشاء الأرض (Earth)
+        // ملاحظة: للحصول على شكل حقيقي تحتاج لصور Texture حقيقية
+        const earthGeometry = new THREE.SphereGeometry(5, 64, 64);
+        const earthMaterial = new THREE.MeshPhongMaterial({
+            map: new THREE.TextureLoader().load('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Earth_DaN_visible_2048x1024.jpg/1024px-Earth_DaN_visible_2048x1024.jpg'),
+            bumpScale: 0.05,
+            specular: new THREE.Color('grey'),
+        });
+        const earth = new THREE.Mesh(earthGeometry, earthMaterial);
+        scene.add(earth);
 
-        // --- الأرض ---
-        const earthGroup = new THREE.Group();
-        scene.add(earthGroup);
-
-        const earthMesh = new THREE.Mesh(
-            new THREE.SphereGeometry(1, 64, 64),
-            new THREE.MeshPhongMaterial({
-                map: textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_atmos_2048.jpg'),
-                specularMap: textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_specular_2048.jpg'),
-                normalMap: textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_normal_2048.jpg'),
-                shininess: 5
-            })
-        );
-        earthGroup.add(earthMesh);
-
-        const cloudMesh = new THREE.Mesh(
-            new THREE.SphereGeometry(1.02, 64, 64),
-            new THREE.MeshPhongMaterial({
-                map: textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_clouds_1024.png'),
-                transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, side: THREE.DoubleSide
-            })
-        );
-        earthGroup.add(cloudMesh);
-
-        const atmosphere = new THREE.Mesh(
-            new THREE.SphereGeometry(1.15, 64, 64),
-            new THREE.ShaderMaterial({
-                vertexShader: `varying vec3 vNormal; void main() { vNormal = normalize(normalMatrix * normal); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
-                fragmentShader: `varying vec3 vNormal; void main() { float intensity = pow(0.6 - dot(vNormal, vec3(0, 0, 1.0)), 3.0); gl_FragColor = vec4(0.3, 0.6, 1.0, 1.0) * intensity; }`,
-                blending: THREE.AdditiveBlending, side: THREE.BackSide, transparent: true
-            })
-        );
-        earthGroup.add(atmosphere);
-
-        // --- النجوم ---
-        const starGeo = new THREE.BufferGeometry();
-        const starPos = [];
-        for(let i=0; i<3000; i++) starPos.push((Math.random()-0.5)*2000, (Math.random()-0.5)*2000, (Math.random()-0.5)*2000);
-        starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
-        const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({color: 0xffffff, size: 2}));
+        // 4. النجوم (Stars Background)
+        const starGeometry = new THREE.BufferGeometry();
+        const starMaterial = new THREE.PointsMaterial({color: 0xffffff});
+        const starVertices = [];
+        for(let i=0; i<10000; i++) {
+            const x = (Math.random() - 0.5) * 2000;
+            const y = (Math.random() - 0.5) * 2000;
+            const z = (Math.random() - 0.5) * 2000;
+            starVertices.push(x,y,z);
+        }
+        starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+        const stars = new THREE.Points(starGeometry, starMaterial);
         scene.add(stars);
 
-        // --- محطة الفضاء (GLB) ---
-        const gltfLoader = new GLTFLoader(manager);
-        let station;
-        const stationOrbit = new THREE.Group();
-        scene.add(stationOrbit);
-
-        // تحميل نموذج Ion Drive كبديل جيد للمحطة
-        gltfLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/gltf/PrimaryIonDrive.glb', (gltf) => {
-            station = gltf.scene;
-            station.scale.set(0.1, 0.1, 0.1);
-            station.position.set(1.5, 0, 0); // المسافة عن الأرض
-            station.rotation.set(Math.PI/2, Math.PI/2, 0);
-            stationOrbit.add(station);
-            
-            // ضوء خاص بالمحطة
-            const light = new THREE.PointLight(0x00aaff, 1, 3);
-            light.position.set(1.5, 0.5, 0);
-            stationOrbit.add(light);
-        });
-
-        // --- نظام السيلفي (صورة المستخدم) ---
-        // سنضيف الصورة كمجموعة تابعة للكاميرا مباشرة حتى تتحرك معها
-        const selfieGroup = new THREE.Group();
-        camera.add(selfieGroup); // إضافة المجموعة للكاميرا
-        scene.add(camera); // يجب إضافة الكاميرا للمشهد لكي تظهر العناصر التابعة لها
-
-        // إطار السيلفي (مبدئياً مخفي حتى يرفع المستخدم صورة)
-        let selfieMesh;
-        const selfieGeometry = new THREE.PlaneGeometry(1.2, 1.6); // نسبة طولية
-        // مادة شفافة مبدئياً
-        const selfieMaterial = new THREE.MeshBasicMaterial({ 
-            color: 0xffffff, 
-            transparent: true, 
-            opacity: 0,
-            side: THREE.DoubleSide
-        });
+        // 5. المحطة والشاشة (Station Screen)
+        // هنا نقوم بعمل نموذج بسيط، في الواقع يجب استبداله بموديل GLTF للمحطة الحقيقية
+        const stationGroup = new THREE.Group();
         
-        selfieMesh = new THREE.Mesh(selfieGeometry, selfieMaterial);
+        // إطار الشاشة
+        const frameGeo = new THREE.BoxGeometry(3.2, 2.2, 0.1);
+        const frameMat = new THREE.MeshLambertMaterial({ color: 0x888888 });
+        const frame = new THREE.Mesh(frameGeo, frameMat);
         
-        // وضع الصورة في زاوية الشاشة (أمام الكاميرا)
-        // Z: المسافة أمام العدسة (سالب يعني للأمام في نظام الكاميرا)
-        // X, Y: الموقع يمين/يسار وفوق/تحت
-        selfieMesh.position.set(1.2, -0.8, -3); 
-        selfieMesh.rotation.set(-0.1, -0.2, 0); // ميلان بسيط لتبدو ممسوكة باليد
-        selfieGroup.add(selfieMesh);
+        // الشاشة نفسها (حيث ستظهر الصورة)
+        const screenGeo = new THREE.PlaneGeometry(3, 2);
+        const screenMat = new THREE.MeshBasicMaterial({ color: 0x000000 }); // لون أسود مبدئياً
+        const screenMesh = new THREE.Mesh(screenGeo, screenMat);
+        screenMesh.position.z = 0.06; // تبرز قليلاً للأمام
 
-        // --- منطق رفع الصورة ---
-        const fileInput = document.getElementById('file-input');
-        fileInput.addEventListener('change', (e) => {
+        stationGroup.add(frame);
+        stationGroup.add(screenMesh);
+        
+        // وضع المحطة في مدار
+        stationGroup.position.set(0, 0, 8); // مسافة قريبة من الكاميرا
+        scene.add(stationGroup);
+
+        // إخفاء رسالة التحميل
+        document.getElementById('loading').style.display = 'none';
+
+        // موقع الكاميرا
+        camera.position.set(0, 0, 12);
+        
+        // أدوات التحكم بالماوس (OrbitControls)
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+
+        // 6. منطق رفع الصورة (Image Upload Logic)
+        const imageUpload = document.getElementById('imageUpload');
+        imageUpload.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = (event) => {
+                reader.onload = function(event) {
                     const img = new Image();
                     img.src = event.target.result;
-                    img.onload = () => {
-                        const userTexture = new THREE.Texture(img);
-                        userTexture.colorSpace = THREE.SRGBColorSpace;
-                        userTexture.needsUpdate = true;
-                        
-                        // تحديث المادة
-                        selfieMaterial.map = userTexture;
-                        selfieMaterial.opacity = 1;
-                        selfieMaterial.needsUpdate = true;
-                        
-                        // تعديل أبعاد اللوحة بناءً على أبعاد الصورة لتجنب التمطي
-                        const aspect = img.width / img.height;
-                        selfieMesh.scale.set(aspect > 1 ? 1 : aspect, aspect > 1 ? 1/aspect : 1, 1);
+                    img.onload = function() {
+                        const texture = new THREE.Texture(img);
+                        texture.needsUpdate = true;
+                        screenMesh.material.map = texture;
+                        screenMesh.material.needsUpdate = true;
+                        screenMesh.material.color.set(0xffffff); // إعادة اللون للأبيض ليظهر التكستشر
                     };
                 };
                 reader.readAsDataURL(file);
             }
         });
 
-        // --- منطق التقاط الصورة (Screenshot) ---
-        document.getElementById('save-btn').addEventListener('click', () => {
-            // 1. ريندر إجباري للحالة الحالية
+        // 7. منطق التقاط الصورة (Snapshot Logic)
+        function takeSnapshot() {
+            // إخفاء واجهة المستخدم مؤقتاً
+            const ui = document.getElementById('ui-container');
+            ui.style.display = 'none';
+            
             renderer.render(scene, camera);
-            // 2. تحويل الكانفاس لصورة
-            const dataURL = renderer.domElement.toDataURL('image/png');
-            // 3. إنشاء رابط تحميل وهمي
-            const link = document.createElement('a');
-            link.download = 'space-selfie.png';
-            link.href = dataURL;
-            link.click();
-        });
+            
+            // تحويل الـ Canvas لصورة
+            setTimeout(() => {
+                const dataURL = renderer.domElement.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.download = 'my-photo-in-space.png';
+                link.href = dataURL;
+                link.click();
+                
+                // إعادة إظهار الواجهة
+                ui.style.display = 'flex';
+            }, 100);
+        }
 
-        // --- التحريك ---
+        // 8. منطق اللغات (Localization)
+        const translations = {
+            ar: { title: "ارفع صورتك للمحطة", desc: "ستظهر صورتك على شاشة المحطة الفضائية.", btn: "التقاط صورة" },
+            en: { title: "Upload Photo to ISS", desc: "Your photo will appear on the station screen.", btn: "Take Snapshot" },
+            fr: { title: "Télécharger une photo", desc: "Votre photo apparaîtra sur l'écran.", btn: "Prendre une photo" },
+            // أضف المزيد هنا
+        };
+
+        function changeLanguage() {
+            const lang = document.getElementById('lang-select').value;
+            const t = translations[lang] || translations['en'];
+            document.getElementById('title-text').innerText = t.title;
+            document.getElementById('desc-text').innerText = t.desc;
+            document.getElementById('btn-snap').innerText = t.btn;
+            document.body.dir = (lang === 'ar') ? 'rtl' : 'ltr';
+        }
+
+        // حلقة الرسم (Animation Loop)
         function animate() {
             requestAnimationFrame(animate);
-
-            // تدوير الكوكب
-            earthMesh.rotation.y += 0.0005;
-            cloudMesh.rotation.y += 0.0006;
             
-            // تدوير المحطة حول الأرض
-            stationOrbit.rotation.y += 0.002;
-            stationOrbit.rotation.z = Math.sin(Date.now() * 0.0002) * 0.1;
+            // تدوير الأرض ببطء
+            earth.rotation.y += 0.0005;
             
-            // تحريك السيلفي "بشكل طفيف" كأن اليد تهتز في الفضاء (تنفس)
-            if (selfieMesh.visible) {
-                selfieMesh.position.y = -0.8 + Math.sin(Date.now() * 0.001) * 0.01;
-            }
+            // تدوير المحطة ببطء لتبدو واقعية
+            stationGroup.rotation.z += 0.0002;
+            stationGroup.rotation.y += 0.001;
 
             controls.update();
             renderer.render(scene, camera);
         }
+        animate();
 
+        // تجاوب الشاشة عند تغيير الحجم
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
-
-        animate();
-
     </script>
 </body>
 </html>
-
