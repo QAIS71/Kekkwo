@@ -1,139 +1,79 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <title>Fast Tools - ضغط الصور أونلاين</title>
-  <meta name="description" content="أداة مجانية لضغط الصور أونلاين بدون تسجيل. سريعة وآمنة.">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- Google AdSense (ضع الكود الحقيقي بعد القبول) -->
-  <!--
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-  -->
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f5f7fa;
-      margin: 0;
-      padding: 0;
-      text-align: center;
-    }
-    header {
-      background: #111827;
-      color: white;
-      padding: 20px;
-    }
-    main {
-      padding: 30px;
-    }
-    .box {
-      background: white;
-      max-width: 500px;
-      margin: auto;
-      padding: 25px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    input[type=file] {
-      margin: 15px 0;
-    }
-    button {
-      background: #2563eb;
-      color: white;
-      border: none;
-      padding: 12px 20px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-    button:hover {
-      background: #1e40af;
-    }
-    footer {
-      margin-top: 40px;
-      padding: 20px;
-      background: #e5e7eb;
-      font-size: 14px;
-    }
-    a {
-      color: #2563eb;
-      text-decoration: none;
-      margin: 0 10px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سيلفي الفضاء | Space Selfie</title>
+    <style>
+        body { font-family: sans-serif; background: #0b0d17; color: white; text-align: center; padding: 20px; }
+        .container { max-width: 600px; margin: auto; border: 1px solid #333; padding: 20px; border-radius: 15px; background: #161b22; }
+        canvas { max-width: 100%; border-radius: 10px; margin-top: 20px; display: none; }
+        input { margin: 20px 0; padding: 10px; }
+        .btn { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        .ads-box { margin-top: 30px; padding: 20px; background: #222; border: 1px dashed #555; color: #888; }
+    </style>
 </head>
-
 <body>
 
-<header>
-  <h1>Fast Tools</h1>
-  <p>أداة ضغط الصور المجانية</p>
-</header>
+    <div class="container">
+        <h1>🚀 سيلفي الفضاء المجاني</h1>
+        <p>ارفع صورتك لتظهر وكأنها داخل محطة الفضاء الدولية!</p>
+        
+        <div class="ads-box">إعلان Google AdSense هنا</div>
 
-<main>
+        <input type="file" id="upload" accept="image/*"><br>
+        <button class="btn" onclick="generateSelfie()">اصنع صورتك الآن</button>
 
-  <!-- إعلان أعلى الصفحة -->
-  <!--
-  <ins class="adsbygoogle"
-       style="display:block"
-       data-ad-client="ca-pub-XXXXXXXX"
-       data-ad-slot="XXXXXXXX"
-       data-ad-format="auto"></ins>
-  -->
+        <canvas id="canvas"></canvas>
+        
+        <br>
+        <a id="downloadLink" style="display:none;" class="btn" style="background: #28a745;">تحميل الصورة ومشاركتها</a>
+    </div>
 
-  <div class="box">
-    <h2>اضغط صورتك الآن</h2>
-    <input type="file" id="imageInput" accept="image/*">
-    <br>
-    <button onclick="compressImage()">ضغط الصورة</button>
-    <br><br>
-    <a id="downloadLink" style="display:none;">تحميل الصورة المضغوطة</a>
-  </div>
+    <script>
+        function generateSelfie() {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            const fileInput = document.getElementById('upload');
+            
+            if (fileInput.files.length === 0) {
+                alert("الرجاء اختيار صورة أولاً!");
+                return;
+            }
 
-</main>
+            const userImg = new Image();
+            const spaceBg = new Image();
 
-<footer>
-  <a href="privacy.html">سياسة الخصوصية</a>
-  <a href="contact.html">اتصل بنا</a>
-</footer>
+            // خلفية الفضاء (صورة لمحطة الفضاء من الداخل بها إطار شاشة)
+            spaceBg.src = 'https://i.imgur.com/8X8v6pS.jpg'; // رابط تجريبي لصورة محطة الفضاء
+            
+            userImg.src = URL.createObjectURL(fileInput.files[0]);
 
-<script>
-function compressImage() {
-  const file = document.getElementById('imageInput').files[0];
-  if (!file) {
-    alert("اختر صورة أولاً");
-    return;
-  }
+            userImg.onload = () => {
+                // ضبط حجم الكانفاس ليكون نفس حجم خلفية الفضاء
+                canvas.width = 800;
+                canvas.height = 500;
+                canvas.style.display = 'block';
 
-  const reader = new FileReader();
-  reader.readAsDataURL(file);
-  reader.onload = function(event) {
-    const img = new Image();
-    img.src = event.target.result;
+                // 1. رسم خلفية الفضاء
+                ctx.drawImage(spaceBg, 0, 0, 800, 500);
 
-    img.onload = function() {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
+                // 2. رسم صورة المستخدم داخل "شاشة" افتراضية في الكانفاس
+                // الإحداثيات (200, 150) والحجم (250x180) هي مثال لمكان الشاشة في الصورة
+                ctx.drawImage(userImg, 310, 145, 185, 125); 
 
-      const scale = 0.7;
-      canvas.width = img.width * scale;
-      canvas.height = img.height * scale;
+                // 3. إضافة نص توضيحي (تذكرة صعود)
+                ctx.font = "14px Arial";
+                ctx.fillStyle = "white";
+                ctx.fillText("Space Tourist: User", 50, 480);
 
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-      canvas.toBlob(function(blob) {
-        const url = URL.createObjectURL(blob);
-        const link = document.getElementById('downloadLink');
-        link.href = url;
-        link.download = "compressed.jpg";
-        link.style.display = "inline-block";
-        link.innerText = "تحميل الصورة";
-      }, 'image/jpeg', 0.7);
-    };
-  };
-}
-</script>
-
+                // إظهار زر التحميل
+                const link = document.getElementById('downloadLink');
+                link.href = canvas.toDataURL("image/png");
+                link.download = "my-space-selfie.png";
+                link.style.display = 'inline-block';
+            };
+        }
+    </script>
 </body>
 </html>
