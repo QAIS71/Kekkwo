@@ -2,259 +2,144 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>صورتك في الفضاء - محطة ناسا</title>
+    <title>متتبع المحطة الفضائية الدولية 🛰️</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    
     <style>
-        body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #000; }
-        
-        /* واجهة المستخدم فوق الـ 3D */
-        #ui-container {
-            position: absolute;
-            top: 0; right: 0; width: 100%; height: 100%;
-            pointer-events: none; /* يسمح بالنقر على الـ 3D */
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+        body {
+            background-color: #0f0f1a; /* لون فضاء داكن */
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            margin: 0;
             padding: 20px;
-            box-sizing: border-box;
         }
-
-        .controls {
-            pointer-events: auto;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 20px;
-            border-radius: 15px;
-            color: white;
-            max-width: 300px;
-            border: 1px solid #444;
+        h1 {
+            color: #00d2ff;
+            text-shadow: 0 0 10px #00d2ff;
         }
-
-        button, input {
-            width: 100%;
-            padding: 10px;
-            margin-top: 10px;
-            border-radius: 5px;
-            border: none;
-            cursor: pointer;
+        #map {
+            height: 400px;
+            width: 80%;
+            margin: 20px auto;
+            border: 2px solid #00d2ff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.2);
         }
-
-        button { background: #007bff; color: white; font-weight: bold; }
-        button:hover { background: #0056b3; }
-        
-        /* مكان الإعلانات */
-        #adsense-banner {
-            pointer-events: auto;
-            background: white;
-            width: 728px;
-            height: 90px;
-            margin: 0 auto;
+        .stats-container {
             display: flex;
-            align-items: center;
             justify-content: center;
-            color: black;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .stat-box {
+            background: #1c1c2e;
+            padding: 15px 25px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            min-width: 150px;
+        }
+        .stat-label {
+            display: block;
+            font-size: 0.9em;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+        .stat-value {
+            font-size: 1.4em;
             font-weight: bold;
+            color: #00ff88;
         }
-
-        /* قائمة اللغات */
-        #lang-select {
-            pointer-events: auto;
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            padding: 10px;
-            background: rgba(255,255,255,0.9);
-            border-radius: 5px;
-        }
-
-        /* رسالة التحميل */
-        #loading {
-            position: absolute; top: 50%; left: 50%; 
-            transform: translate(-50%, -50%); 
-            color: white; font-size: 24px;
+        /* تصميم أيقونة المحطة */
+        .iss-icon {
+            filter: drop-shadow(0 0 5px red);
         }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 </head>
 <body>
 
-    <div id="loading">جاري تحميل المحطة الفضائية...</div>
+    <h1>🛰️ المحطة الفضائية الدولية (مباشر)</h1>
+    
+    <div id="map"></div>
 
-    <div id="ui-container">
-        
-        <select id="lang-select" onchange="changeLanguage()">
-            <option value="ar">العربية</option>
-            <option value="en">English</option>
-            <option value="fr">Français</option>
-            <option value="es">Español</option>
-            <option value="de">Deutsch</option>
-            </select>
-
-        <div class="controls">
-            <h2 id="title-text">ارفع صورتك للمحطة</h2>
-            <p id="desc-text">ستظهر صورتك على شاشة المحطة الفضائية وتدور حول الأرض.</p>
-            <input type="file" id="imageUpload" accept="image/*">
-            <button onclick="takeSnapshot()" id="btn-snap">التقاط صورة عالية الدقة</button>
+    <div class="stats-container">
+        <div class="stat-box">
+            <span class="stat-label">خط العرض (Latitude)</span>
+            <span class="stat-value" id="lat">0.00</span>
         </div>
-
-        <div id="adsense-banner">
-            مساحة إعلانية (Google AdSense)
+        <div class="stat-box">
+            <span class="stat-label">خط الطول (Longitude)</span>
+            <span class="stat-value" id="lon">0.00</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-label">السرعة (كم/ساعة)</span>
+            <span class="stat-value" id="vel">0</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-label">الارتفاع (كم)</span>
+            <span class="stat-value" id="alt">0</span>
         </div>
     </div>
 
     <script>
-        // 1. إعداد المشهد (Scene Setup)
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true }); // preserveDrawingBuffer مهم لالتقاط الصورة
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
-
-        // 2. إضاءة المشهد
-        const ambientLight = new THREE.AmbientLight(0x333333);
-        scene.add(ambientLight);
-        const sunLight = new THREE.DirectionalLight(0xffffff, 1);
-        sunLight.position.set(5, 3, 5);
-        scene.add(sunLight);
-
-        // 3. إنشاء الأرض (Earth)
-        // ملاحظة: للحصول على شكل حقيقي تحتاج لصور Texture حقيقية
-        const earthGeometry = new THREE.SphereGeometry(5, 64, 64);
-        const earthMaterial = new THREE.MeshPhongMaterial({
-            map: new THREE.TextureLoader().load('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Earth_DaN_visible_2048x1024.jpg/1024px-Earth_DaN_visible_2048x1024.jpg'),
-            bumpScale: 0.05,
-            specular: new THREE.Color('grey'),
-        });
-        const earth = new THREE.Mesh(earthGeometry, earthMaterial);
-        scene.add(earth);
-
-        // 4. النجوم (Stars Background)
-        const starGeometry = new THREE.BufferGeometry();
-        const starMaterial = new THREE.PointsMaterial({color: 0xffffff});
-        const starVertices = [];
-        for(let i=0; i<10000; i++) {
-            const x = (Math.random() - 0.5) * 2000;
-            const y = (Math.random() - 0.5) * 2000;
-            const z = (Math.random() - 0.5) * 2000;
-            starVertices.push(x,y,z);
-        }
-        starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
-        const stars = new THREE.Points(starGeometry, starMaterial);
-        scene.add(stars);
-
-        // 5. المحطة والشاشة (Station Screen)
-        // هنا نقوم بعمل نموذج بسيط، في الواقع يجب استبداله بموديل GLTF للمحطة الحقيقية
-        const stationGroup = new THREE.Group();
+        // 1. إعداد الخريطة
+        const map = L.map('map').setView([0, 0], 2);
         
-        // إطار الشاشة
-        const frameGeo = new THREE.BoxGeometry(3.2, 2.2, 0.1);
-        const frameMat = new THREE.MeshLambertMaterial({ color: 0x888888 });
-        const frame = new THREE.Mesh(frameGeo, frameMat);
-        
-        // الشاشة نفسها (حيث ستظهر الصورة)
-        const screenGeo = new THREE.PlaneGeometry(3, 2);
-        const screenMat = new THREE.MeshBasicMaterial({ color: 0x000000 }); // لون أسود مبدئياً
-        const screenMesh = new THREE.Mesh(screenGeo, screenMat);
-        screenMesh.position.z = 0.06; // تبرز قليلاً للأمام
+        // استخدام خرائط OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 18,
+        }).addTo(map);
 
-        stationGroup.add(frame);
-        stationGroup.add(screenMesh);
-        
-        // وضع المحطة في مدار
-        stationGroup.position.set(0, 0, 8); // مسافة قريبة من الكاميرا
-        scene.add(stationGroup);
-
-        // إخفاء رسالة التحميل
-        document.getElementById('loading').style.display = 'none';
-
-        // موقع الكاميرا
-        camera.position.set(0, 0, 12);
-        
-        // أدوات التحكم بالماوس (OrbitControls)
-        const controls = new THREE.OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-
-        // 6. منطق رفع الصورة (Image Upload Logic)
-        const imageUpload = document.getElementById('imageUpload');
-        imageUpload.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const img = new Image();
-                    img.src = event.target.result;
-                    img.onload = function() {
-                        const texture = new THREE.Texture(img);
-                        texture.needsUpdate = true;
-                        screenMesh.material.map = texture;
-                        screenMesh.material.needsUpdate = true;
-                        screenMesh.material.color.set(0xffffff); // إعادة اللون للأبيض ليظهر التكستشر
-                    };
-                };
-                reader.readAsDataURL(file);
-            }
+        // 2. إعداد أيقونة المحطة الفضائية
+        const issIcon = L.icon({
+            iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d0/International_Space_Station.svg',
+            iconSize: [50, 32],
+            iconAnchor: [25, 16],
+            className: 'iss-icon'
         });
 
-        // 7. منطق التقاط الصورة (Snapshot Logic)
-        function takeSnapshot() {
-            // إخفاء واجهة المستخدم مؤقتاً
-            const ui = document.getElementById('ui-container');
-            ui.style.display = 'none';
-            
-            renderer.render(scene, camera);
-            
-            // تحويل الـ Canvas لصورة
-            setTimeout(() => {
-                const dataURL = renderer.domElement.toDataURL('image/png');
-                const link = document.createElement('a');
-                link.download = 'my-photo-in-space.png';
-                link.href = dataURL;
-                link.click();
+        const marker = L.marker([0, 0], {icon: issIcon}).addTo(map);
+        let firstLoad = true;
+
+        // 3. دالة جلب البيانات من API
+        async function getISS() {
+            try {
+                // نستخدم API يدعم الاتصال الآمن HTTPS للويب
+                const response = await fetch('https://api.wheretheiss.at/v1/satellites/25544');
+                const data = await response.json();
+
+                const { latitude, longitude, velocity, altitude } = data;
+
+                // تحديث موقع الأيقونة
+                marker.setLatLng([latitude, longitude]);
                 
-                // إعادة إظهار الواجهة
-                ui.style.display = 'flex';
-            }, 100);
+                // تحريك الخريطة للموقع الجديد (في المرة الأولى فقط لتجنب الإزعاج)
+                if(firstLoad) {
+                    map.setView([latitude, longitude], 3);
+                    firstLoad = false;
+                }
+
+                // تحديث الأرقام في الصفحة
+                document.getElementById('lat').textContent = latitude.toFixed(4);
+                document.getElementById('lon').textContent = longitude.toFixed(4);
+                // تحويل السرعة لأرقام صحيحة وعرضها
+                document.getElementById('vel').textContent = Math.round(velocity).toLocaleString();
+                document.getElementById('alt').textContent = altitude.toFixed(2);
+
+            } catch (error) {
+                console.error("فشل الاتصال بالأقمار الصناعية:", error);
+            }
         }
 
-        // 8. منطق اللغات (Localization)
-        const translations = {
-            ar: { title: "ارفع صورتك للمحطة", desc: "ستظهر صورتك على شاشة المحطة الفضائية.", btn: "التقاط صورة" },
-            en: { title: "Upload Photo to ISS", desc: "Your photo will appear on the station screen.", btn: "Take Snapshot" },
-            fr: { title: "Télécharger une photo", desc: "Votre photo apparaîtra sur l'écran.", btn: "Prendre une photo" },
-            // أضف المزيد هنا
-        };
+        // تشغيل الدالة لأول مرة
+        getISS();
 
-        function changeLanguage() {
-            const lang = document.getElementById('lang-select').value;
-            const t = translations[lang] || translations['en'];
-            document.getElementById('title-text').innerText = t.title;
-            document.getElementById('desc-text').innerText = t.desc;
-            document.getElementById('btn-snap').innerText = t.btn;
-            document.body.dir = (lang === 'ar') ? 'rtl' : 'ltr';
-        }
-
-        // حلقة الرسم (Animation Loop)
-        function animate() {
-            requestAnimationFrame(animate);
-            
-            // تدوير الأرض ببطء
-            earth.rotation.y += 0.0005;
-            
-            // تدوير المحطة ببطء لتبدو واقعية
-            stationGroup.rotation.z += 0.0002;
-            stationGroup.rotation.y += 0.001;
-
-            controls.update();
-            renderer.render(scene, camera);
-        }
-        animate();
-
-        // تجاوب الشاشة عند تغيير الحجم
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+        // تحديث البيانات كل 2 ثانية
+        setInterval(getISS, 2000);
     </script>
+
 </body>
 </html>
