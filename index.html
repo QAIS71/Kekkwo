@@ -2,100 +2,67 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>محاكاة المحطة الدولية</title>
+    <title>محاكاة المحطة الدولية - النسخة المضمونة</title>
     <style>
-        body {
-            margin: 0;
-            background-color: #000;
-            overflow: hidden;
-            color: #fff;
-            font-family: sans-serif;
+        body { margin: 0; background: #000; overflow: hidden; font-family: sans-serif; }
+        
+        /* نجوم ثابتة */
+        .stars {
+            position: fixed; width: 100%; height: 100%;
+            background: radial-gradient(white, rgba(255,255,255,.2) 1px, transparent 20px);
+            background-size: 50px 50px;
         }
 
-        /* الفضاء والنجوم */
-        .universe {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-            background: radial-gradient(circle, #111 0%, #000 100%);
-        }
-
-        /* كوكب الأرض في المنتصف */
-        .earth-container {
-            position: absolute;
-            top: 50%;
-            left: 50%;
+        /* كوكب الأرض */
+        .earth {
+            position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            width: 350px;
-            height: 350px;
-            z-index: 1;
-        }
-
-        .earth-img {
-            width: 100%;
-            height: 100%;
+            width: 300px; height: 300px;
+            background: radial-gradient(circle at 30% 30%, #2b82c9, #000);
             border-radius: 50%;
-            box-shadow: 0 0 60px rgba(0, 150, 255, 0.4);
-            animation: spin 60s linear infinite;
+            box-shadow: 0 0 50px #004e89;
+            z-index: 5;
         }
 
-        /* محطة الفضاء الدولية */
-        .iss-ship {
-            position: absolute;
-            width: 100px; /* حجم كبير عشان تشوفها */
+        /* حاوية المحطة للمدار */
+        .orbit-path {
+            position: absolute; top: 50%; left: 50%;
+            width: 500px; height: 500px;
+            margin-top: -250px; margin-left: -250px;
+            animation: rotateOrbit 10s linear infinite;
             z-index: 10;
-            /* مسار الحركة المدارية */
-            animation: orbit 12s linear infinite;
         }
 
-        /* حركة الدوران حول الأرض بالكامل */
-        @keyframes orbit {
-            0% {
-                top: 50%;
-                left: -150px;
-                transform: translate(-50%, -50%) rotate(0deg);
-            }
-            50% {
-                top: 20%;
-                left: 50%;
-                transform: translate(-50%, -50%) rotate(20deg);
-            }
-            100% {
-                top: 50%;
-                left: calc(100% + 150px);
-                transform: translate(-50%, -50%) rotate(0deg);
-            }
+        /* رسم المحطة برمجياً (SVG) لضمان ظهورها */
+        .iss-svg {
+            width: 80px; height: 80px;
+            transform: rotate(45deg);
         }
 
-        @keyframes spin {
+        @keyframes rotateOrbit {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
 
-        .status {
-            position: fixed;
-            top: 20px;
-            width: 100%;
-            text-align: center;
-            font-weight: bold;
-            background: rgba(0,0,0,0.6);
-            padding: 10px 0;
-            z-index: 100;
+        .label {
+            position: fixed; top: 20px; width: 100%; text-align: center;
+            color: #00d4ff; font-weight: bold; text-shadow: 0 0 10px #000;
         }
     </style>
 </head>
 <body>
 
-    <div class="status">المحطة الدولية تعبر المدار الآن..</div>
+<div class="stars"></div>
+<div class="label">المحطة الدولية تدور حول الأرض (نسخة الكود المباشر)</div>
 
-    <div class="universe">
-        <div class="earth-container">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Earth_Western_Hemisphere_transparent_background.png/600px-Earth_Western_Hemisphere_transparent_background.png" class="earth-img" alt="Earth">
-        </div>
+<div class="earth"></div>
 
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/ISS_emblem.png/600px-ISS_emblem.png" class="iss-ship" alt="ISS">
-    </div>
+<div class="orbit-path">
+    <svg class="iss-svg" viewBox="0 0 100 100">
+        <rect x="10" y="45" width="80" height="10" fill="#ddd" /> <rect x="40" y="20" width="20" height="60" fill="#fff" /> <circle cx="50" cy="50" r="8" fill="#555" /> <rect x="15" y="40" width="10" height="20" fill="#555" />
+        <rect x="75" y="40" width="10" height="20" fill="#555" />
+    </svg>
+</div>
 
 </body>
 </html>
