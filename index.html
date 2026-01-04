@@ -1,266 +1,233 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Space Selfie Station</title>
-    <style>
-        body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        
-        /* واجهة المستخدم فوق الـ 3D */
-        #ui-container {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; /* يسمح بالنقر على الـ 3D */
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
+import React, { useState, useRef } from 'react';
+import { Camera, Download, RefreshCcw, Rocket, Share2, Stars, Zap, Eye } from 'lucide-react';
 
-        /* الشريط العلوي واللغات */
-        .top-bar {
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
-            pointer-events: auto;
-        }
+const App = () => {
+  const [userImage, setUserImage] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [finalResult, setFinalResult] = useState(null);
+  const canvasRef = useRef(null);
 
-        .logo { color: #00d2ff; font-size: 24px; font-weight: bold; text-shadow: 0 0 10px #00d2ff; }
-        
-        select#language-selector {
-            background: rgba(255,255,255,0.1);
-            color: white;
-            border: 1px solid #00d2ff;
-            padding: 5px 15px;
-            border-radius: 20px;
-            cursor: pointer;
-        }
+  // استخدام الصورة الأصلية التي أرسلتها كقاعدة ثابتة
+  const BASE_IMAGE = "https://i.ibb.co/L5fX0N5/1767511487529-2.jpg"; 
 
-        /* أدوات التحكم في الأسفل */
-        .controls {
-            padding: 30px;
-            text-align: center;
-            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
-            pointer-events: auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-        }
+  const handleUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => setUserImage(ev.target.result);
+      reader.readAsDataURL(file);
+    }
+  };
 
-        .btn {
-            background: linear-gradient(45deg, #00d2ff, #3a7bd5);
-            border: none;
-            padding: 12px 30px;
-            color: white;
-            font-size: 16px;
-            border-radius: 30px;
-            cursor: pointer;
-            box-shadow: 0 0 15px rgba(0, 210, 255, 0.5);
-            transition: transform 0.2s;
-            font-weight: bold;
-        }
-        .btn:hover { transform: scale(1.05); }
-        .btn-secondary { background: #444; box-shadow: none; }
+  const processImage = () => {
+    if (!userImage) return;
+    setIsProcessing(true);
 
-        /* مكان الإعلانات (لأرباحك) */
-        .ad-space {
-            position: absolute;
-            top: 50%; right: 20px;
-            transform: translateY(-50%);
-            width: 160px; height: 600px;
-            background: rgba(255,255,255,0.05);
-            border: 1px dashed #555;
-            color: #555;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            pointer-events: auto;
-        }
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const bg = new Image();
+    const user = new Image();
 
-        /* إخفاء زر رفع الملف الافتراضي */
-        input[type="file"] { display: none; }
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-</head>
-<body>
+    bg.crossOrigin = "anonymous";
+    bg.src = BASE_IMAGE;
+    user.src = userImage;
 
-    <div id="ui-container">
-        <div class="top-bar">
-            <div class="logo">🚀 SpaceSelfie</div>
-            <select id="language-selector" onchange="changeLanguage()">
-                <option value="en">English</option>
-                <option value="ar">العربية</option>
-                <option value="fr">Français</option>
-                <option value="es">Español</option>
-                <option value="de">Deutsch</option>
-                <option value="zh">Chinese</option>
-                </select>
+    bg.onload = () => {
+      canvas.width = bg.width;
+      canvas.height = bg.height;
+
+      // 1. رسم المشهد الأصلي (المحطة من الداخل)
+      ctx.drawImage(bg, 0, 0);
+
+      // 2. تحديد منطقة الشاشة (التابلت) في صورتك بدقة
+      const x = canvas.width * 0.428; 
+      const y = canvas.height * 0.355;
+      const w = canvas.width * 0.155; 
+      const h = canvas.height * 0.165;
+
+      ctx.save();
+      // قص الحواف لتناسب إطار الشاشة
+      ctx.beginPath();
+      ctx.rect(x, y, w, h);
+      ctx.clip();
+
+      // 3. معالجة صورة المستخدم لتبدو "إلكترونية"
+      // رسم الصورة
+      const scale = Math.max(w / user.width, h / user.height);
+      const sw = user.width * scale;
+      const sh = user.height * scale;
+      const sx = x + (w - sw) / 2;
+      const sy = y + (h - sh) / 2;
+      
+      ctx.drawImage(user, sx, sy, sw, sh);
+
+      // إضافة "فلتر" إضاءة المحطة (أزرق/أخضر تقني)
+      ctx.fillStyle = "rgba(0, 255, 255, 0.15)";
+      ctx.globalCompositeOperation = "screen";
+      ctx.fillRect(x, y, w, h);
+      ctx.globalCompositeOperation = "source-over";
+
+      // إضافة خطوط المسح (Scanlines) لتبدو كشاشة حقيقية
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+      ctx.lineWidth = 1;
+      for(let i = y; i < y+h; i+=3) {
+        ctx.beginPath();
+        ctx.moveTo(x, i);
+        ctx.lineTo(x+w, i);
+        ctx.stroke();
+      }
+
+      // 4. الانعكاس الزجاجي العلوي (ليظهر وكأنه زجاج المقصورة)
+      const gradient = ctx.createLinearGradient(x, y, x + w, y + h);
+      gradient.addColorStop(0, "rgba(255, 255, 255, 0.25)");
+      gradient.addColorStop(0.4, "rgba(255, 255, 255, 0)");
+      gradient.addColorStop(0.6, "rgba(255, 255, 255, 0)");
+      gradient.addColorStop(1, "rgba(255, 255, 255, 0.1)");
+      ctx.fillStyle = gradient;
+      ctx.fillRect(x, y, w, h);
+
+      ctx.restore();
+
+      // 5. إضافة لمسة نهائية: وهج بسيط حول الشاشة
+      ctx.shadowBlur = 15;
+      ctx.shadowColor = "rgba(0, 255, 255, 0.5)";
+      ctx.strokeStyle = "rgba(0, 255, 255, 0.3)";
+      ctx.strokeRect(x, y, w, h);
+
+      setTimeout(() => {
+        setFinalResult(canvas.toDataURL("image/png"));
+        setIsProcessing(false);
+      }, 1500);
+    };
+  };
+
+  return (
+    <div className="min-h-screen bg-[#030508] text-white font-sans selection:bg-blue-500">
+      {/* Navbar */}
+      <nav className="p-4 border-b border-white/5 flex justify-between items-center bg-black/80 backdrop-blur-xl sticky top-0 z-50">
+        <div className="flex items-center gap-2">
+          <div className="bg-blue-600 p-1.5 rounded-lg shadow-lg shadow-blue-600/20">
+            <Rocket size={20} className="text-white" />
+          </div>
+          <span className="font-black text-lg tracking-tighter italic">ISS_INTERIOR_v2</span>
         </div>
-
-        <div class="ad-space">
-            Google AdSense Area
+        <div className="hidden md:flex gap-6 text-[11px] font-bold uppercase tracking-widest text-gray-400">
+          <span className="text-blue-400">الرئيسية</span>
+          <span>المعرض</span>
+          <span>الخصوصية</span>
         </div>
+      </nav>
 
-        <div class="controls">
-            <h2 id="instruction-text" style="color: white; text-shadow: 0 2px 4px black;">Upload your photo to space!</h2>
+      <main className="max-w-6xl mx-auto p-6 grid lg:grid-cols-2 gap-12 mt-4 items-center">
+        
+        {/* Left Side: Upload */}
+        <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-700">
+          <div className="space-y-3">
+            <h1 className="text-4xl md:text-5xl font-black leading-none bg-gradient-to-br from-white to-gray-500 bg-clip-text text-transparent">
+              سيلفي داخل المحطة الفضائية
+            </h1>
+            <p className="text-gray-400 text-sm md:text-base leading-relaxed max-w-md">
+              حول صورتك إلى بث مباشر يظهر داخل أجهزة محطة الفضاء الدولية. الموقع يستخدم صورتك الأصلية للحفاظ على الواقعية الكاملة.
+            </p>
+          </div>
+
+          <div className="bg-[#0a0c12] border border-white/10 p-6 rounded-[2rem] shadow-2xl relative overflow-hidden group">
+            <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-600/10 rounded-full blur-3xl group-hover:bg-blue-600/20 transition-all duration-700"></div>
             
-            <input type="file" id="imageUpload" accept="image/*">
-            <button class="btn" onclick="document.getElementById('imageUpload').click()" id="upload-btn">📂 Upload Photo</button>
-            <button class="btn btn-secondary" onclick="takeSnapshot()" id="download-btn">📸 Download High Res</button>
+            <div className="relative space-y-6">
+              <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-white/10 rounded-3xl cursor-pointer hover:border-blue-500/50 hover:bg-blue-500/5 transition-all overflow-hidden bg-black/40 group">
+                {userImage ? (
+                  <img src={userImage} className="w-full h-full object-cover animate-in zoom-in duration-300" alt="Preview" />
+                ) : (
+                  <div className="text-center space-y-4">
+                    <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto ring-1 ring-white/10 group-hover:ring-blue-500/50 transition-all">
+                      <Camera className="text-gray-500 group-hover:text-blue-400" size={28} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-gray-300">ارفع صورتك الشخصية</p>
+                      <p className="text-[10px] text-gray-500 mt-1">تتم المعالجة داخل جهازك فقط</p>
+                    </div>
+                  </div>
+                )}
+                <input type="file" className="hidden" onChange={handleUpload} accept="image/*" />
+              </label>
+
+              <button 
+                onClick={processImage}
+                disabled={!userImage || isProcessing}
+                className="w-full py-4 bg-blue-600 hover:bg-blue-500 disabled:opacity-20 text-white font-black rounded-2xl shadow-xl shadow-blue-900/40 transition-all flex items-center justify-center gap-3 active:scale-95 group"
+              >
+                {isProcessing ? <RefreshCw className="animate-spin" /> : <Zap size={18} className="group-hover:animate-pulse" />}
+                {isProcessing ? "جاري البث للمحطة..." : "تحديث شاشة المقصورة"}
+              </button>
+            </div>
+          </div>
+
+          {/* Ad Space Top */}
+          <div className="w-full py-4 px-6 bg-white/5 border border-dashed border-white/10 rounded-2xl flex items-center justify-between">
+            <span className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">مساحة إعلانية</span>
+            <div className="w-24 h-4 bg-white/10 rounded animate-pulse"></div>
+          </div>
         </div>
+
+        {/* Right Side: Preview */}
+        <div className="relative flex flex-col gap-6 animate-in fade-in slide-in-from-right-4 duration-700">
+          <div className="relative bg-black rounded-[2.5rem] overflow-hidden border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.8)] group aspect-[4/3]">
+            {finalResult ? (
+              <img src={finalResult} className="w-full h-full object-cover animate-in fade-in zoom-in duration-1000" alt="Result" />
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center p-12 text-center bg-[#05070a]">
+                <div className="relative mb-6">
+                  <div className="w-20 h-20 border-2 border-white/5 border-t-blue-500 rounded-full animate-spin"></div>
+                  <Eye className="absolute inset-0 m-auto text-blue-500/20" size={24} />
+                </div>
+                <h3 className="text-lg font-bold text-gray-500">جاهز للمعاينة</h3>
+                <p className="text-gray-700 text-xs mt-2">صورتك ستظهر داخل الشاشة تماماً كما في مشهد المحطة الأصلي</p>
+              </div>
+            )}
+            
+            {/* Overlay UI elements */}
+            <div className="absolute top-6 left-6 flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+              <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
+              <span className="text-[9px] font-bold tracking-widest">REC: ISS_CAM_01</span>
+            </div>
+          </div>
+
+          {finalResult && (
+            <div className="flex gap-4">
+              <a 
+                href={finalResult} 
+                download="space-interior-selfie.png"
+                className="flex-1 bg-white text-black font-black py-4 rounded-2xl flex items-center justify-center gap-2 hover:bg-blue-400 transition-all shadow-xl active:scale-95"
+              >
+                <Download size={18} /> تحميل الصورة
+              </a>
+              <button className="bg-white/5 p-4 rounded-2xl border border-white/10 hover:bg-white/10 transition active:scale-95">
+                <Share2 size={22} className="text-gray-400" />
+              </button>
+            </div>
+          )}
+
+          {/* Ad Space Side */}
+          <div className="w-full min-h-[120px] bg-white/5 border border-dashed border-white/10 rounded-[2rem] flex items-center justify-center text-[10px] text-gray-700 font-bold uppercase tracking-widest">
+            إعلان Google AdSense هنا
+          </div>
+        </div>
+      </main>
+
+      <footer className="mt-20 border-t border-white/5 py-12 px-6 flex flex-col md:flex-row justify-between items-center max-w-6xl mx-auto gap-6 text-gray-600">
+        <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-widest">
+          <span className="hover:text-blue-400 cursor-pointer transition">عن المشروع</span>
+          <span className="hover:text-blue-400 cursor-pointer transition">تواصل معنا</span>
+          <span className="hover:text-blue-400 cursor-pointer transition">الشروط</span>
+        </div>
+        <p className="text-[10px] font-medium opacity-50 italic">© 2024 سيلفي الفضاء - جودة المحاكاة الفضائية</p>
+      </footer>
+
+      <canvas ref={canvasRef} className="hidden" />
     </div>
+  );
+};
 
-    <script>
-        // 1. إعداد المشهد الأساسي (Scene Setup)
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true }); // preserveDrawingBuffer مهم للتحميل
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(window.devicePixelRatio); // لجودة عالية جداً
-        document.body.appendChild(renderer.domElement);
+export default App;
 
-        // 2. الإضاءة (محاكاة الشمس)
-        const ambientLight = new THREE.AmbientLight(0x333333);
-        scene.add(ambientLight);
-        const sunLight = new THREE.DirectionalLight(0xffffff, 1.5);
-        sunLight.position.set(5, 3, 5);
-        scene.add(sunLight);
-
-        // 3. إنشاء النجوم (Starfield)
-        const starsGeometry = new THREE.BufferGeometry();
-        const starsCount = 5000;
-        const posArray = new Float32Array(starsCount * 3);
-        for(let i = 0; i < starsCount * 3; i++) {
-            posArray[i] = (Math.random() - 0.5) * 100; // توزيع النجوم
-        }
-        starsGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-        const starsMaterial = new THREE.PointsMaterial({size: 0.05, color: 0xffffff});
-        const starMesh = new THREE.Points(starsGeometry, starsMaterial);
-        scene.add(starMesh);
-
-        // 4. إنشاء كوكب الأرض (Earth)
-        // ملاحظة: لكي تكون واقعية جداً تحتاج روابط Textures حقيقية. هنا نستخدم ألوان لتوضيح الفكرة.
-        const earthGeometry = new THREE.SphereGeometry(2, 64, 64);
-        const earthMaterial = new THREE.MeshPhongMaterial({
-            map: new THREE.TextureLoader().load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_atmos_2048.jpg'),
-            specular: new THREE.Color('grey'),
-            shininess: 10
-        });
-        const earth = new THREE.Mesh(earthGeometry, earthMaterial);
-        scene.add(earth);
-
-        // 5. إنشاء "شاشة المحطة" (Station Screen)
-        // في المشروع الحقيقي، هنا ستقوم بتحميل موديل 3D للمحطة بصيغة GLTF
-        // الآن سنصنع "إطار" يمثل التابلت أو الشاشة
-        const screenGroup = new THREE.Group();
-
-        // إطار الشاشة (الأسود)
-        const frameGeo = new THREE.BoxGeometry(1.6, 1, 0.1);
-        const frameMat = new THREE.MeshLambertMaterial({ color: 0x111111 });
-        const frame = new THREE.Mesh(frameGeo, frameMat);
-        screenGroup.add(frame);
-
-        // الشاشة نفسها (التي ستظهر عليها الصورة)
-        const screenGeo = new THREE.PlaneGeometry(1.5, 0.9);
-        const screenMat = new THREE.MeshBasicMaterial({ color: 0x000000 }); // أسود في البداية
-        const displayScreen = new THREE.Mesh(screenGeo, screenMat);
-        displayScreen.position.z = 0.06; // تبرز قليلاً للأمام
-        screenGroup.add(displayScreen);
-
-        // وضع الشاشة أمام الكاميرا لتبدو كأنها داخل محطة تدور
-        screenGroup.position.set(0, 0, 3.5); 
-        scene.add(screenGroup);
-
-        camera.position.z = 5;
-
-        // 6. منطق رفع الصورة (Upload Logic)
-        const imageUpload = document.getElementById('imageUpload');
-        imageUpload.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const imgObj = new Image();
-                    imgObj.src = event.target.result;
-                    imgObj.onload = function() {
-                        const texture = new THREE.Texture(imgObj);
-                        texture.needsUpdate = true;
-                        // تطبيق الصورة على خامة الشاشة
-                        displayScreen.material.map = texture;
-                        displayScreen.material.color.set(0xffffff); // جعلها بيضاء لتظهر الألوان
-                        displayScreen.material.needsUpdate = true;
-                    };
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        // 7. التحريك (Animation Loop)
-        function animate() {
-            requestAnimationFrame(animate);
-            
-            // تدوير الأرض ببطء (واقعية)
-            earth.rotation.y += 0.0005;
-            
-            // تحريك النجوم قليلاً
-            starMesh.rotation.y -= 0.0002;
-
-            // جعل الشاشة تتحرك حركة طفيفة كأنها تسبح في انعدام الجاذبية
-            screenGroup.rotation.z = Math.sin(Date.now() * 0.0005) * 0.02;
-            screenGroup.position.y = Math.sin(Date.now() * 0.001) * 0.05;
-
-            renderer.render(scene, camera);
-        }
-        animate();
-
-        // 8. منطق التحميل (Download/Snapshot)
-        function takeSnapshot() {
-            // إخفاء الـ UI مؤقتاً إذا أردت (اختياري، هنا الـ UI HTML منفصل فلا يظهر في الـ Canvas)
-            render(); // ريندر لضمان آخر لقطة
-            const link = document.createElement('a');
-            link.download = 'My-Space-Selfie.png';
-            // جودة عالية جداً
-            link.href = renderer.domElement.toDataURL('image/png', 1.0); 
-            link.click();
-        }
-
-        function render() {
-            renderer.render(scene, camera);
-        }
-
-        // ضبط الحجم عند تغيير النافذة
-        window.addEventListener('resize', onWindowResize, false);
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
-
-        // 9. الترجمة (Localization Logic)
-        const translations = {
-            en: { title: "Upload your photo to space!", btnUp: "📂 Upload Photo", btnDown: "📸 Download High Res" },
-            ar: { title: "ارفع صورتك إلى الفضاء!", btnUp: "📂 رفع صورة", btnDown: "📸 تحميل بدقة عالية" },
-            fr: { title: "Téléchargez votre photo dans l'espace!", btnUp: "📂 Télécharger", btnDown: "📸 Enregistrer" },
-            // أضف باقي اللغات هنا
-        };
-
-        function changeLanguage() {
-            const lang = document.getElementById('language-selector').value;
-            const t = translations[lang] || translations['en'];
-            
-            document.getElementById('instruction-text').innerText = t.title;
-            document.getElementById('upload-btn').innerText = t.btnUp;
-            document.getElementById('download-btn').innerText = t.btnDown;
-            
-            // تعديل اتجاه النص للعربية
-            if(lang === 'ar') {
-                document.body.style.direction = 'rtl';
-            } else {
-                document.body.style.direction = 'ltr';
-            }
-        }
-    </script>
-</body>
-</html>
