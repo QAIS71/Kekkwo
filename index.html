@@ -3,348 +3,302 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Space Selfie - سيلفي الفضاء</title>
+    <title>Space View AI - محاكي الفضاء الذكي</title>
+    <!-- استدعاء Tailwind CSS للتصميم الاحترافي -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- خطوط عربية وانجليزية -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <!-- مكتبة الأيقونات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        space: '#0B0E14',
+                        panel: '#151921',
+                        accent: '#00F0FF', // لون "سايبر بانك" للذكاء الاصطناعي
+                        glass: 'rgba(21, 25, 33, 0.7)'
+                    },
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                        orbitron: ['Orbitron', 'sans-serif'],
+                    },
+                    animation: {
+                        'scan': 'scan 2s linear infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        scan: {
+                            '0%': { top: '0%' },
+                            '100%': { top: '100%' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0) rotateX(5deg)' },
+                            '50%': { transform: 'translateY(-20px) rotateX(5deg)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        /* --- إعدادات أساسية --- */
-        :root {
-            --bg-dark: #0f172a;
-            --bg-card: #1e293b;
-            --accent: #38bdf8;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
+        body { font-family: 'Cairo', sans-serif; background-color: #050505; color: white; overflow-x: hidden; }
+        .neon-text { text-shadow: 0 0 10px #00F0FF, 0 0 20px #00F0FF; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        /* تأثير التابلت الواقعي */
+        .tablet-frame {
+            box-shadow: 
+                0 0 0 2px #333,
+                0 0 0 8px #111,
+                0 20px 50px rgba(0,0,0,0.8);
+            transform-style: preserve-3d;
+            perspective: 1000px;
         }
-
-        body {
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            display: flex;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        /* --- القائمة الجانبية (Sidebar) --- */
-        .sidebar {
-            width: 250px;
-            background-color: var(--bg-card);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            border-left: 1px solid #334155;
-            flex-shrink: 0;
-        }
-
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--text-main);
-            margin-bottom: 40px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .logo span { color: var(--accent); }
-
-        .nav-menu {
-            list-style: none;
-            flex-grow: 1;
-        }
-
-        .nav-item {
-            padding: 12px 15px;
-            margin-bottom: 8px;
-            border-radius: 8px;
-            cursor: pointer;
-            color: var(--text-muted);
-            transition: 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .nav-item:hover, .nav-item.active {
-            background-color: rgba(56, 189, 248, 0.1);
-            color: var(--accent);
-        }
-
-        /* --- المحتوى الرئيسي --- */
-        .main-content {
-            flex-grow: 1;
-            padding: 30px;
-            display: flex;
-            flex-direction: column;
-            gap: 30px;
-        }
-
-        /* --- منطقة المحاكاة (The Space View) --- */
-        .space-container {
-            width: 100%;
-            height: 500px;
-            background-color: #000;
-            border-radius: 20px;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
-            /* خلفية الأرض والفضاء - يمكنك تغيير الرابط لصورة حقيقية */
-            background-image: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop'); 
-            background-size: cover;
-            background-position: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid #334155;
-        }
-
-        /* تأثير الكوبولا (النافذة) */
-        .cupola-overlay {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
+        /* انعكاس الشاشة */
+        .screen-reflection {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 40%, rgba(255,255,255,0) 60%, rgba(255,255,255,0.05) 100%);
             pointer-events: none;
-            background: radial-gradient(circle, transparent 50%, rgba(0,0,0,0.8) 100%);
-            border: 20px solid rgba(255,255,255,0.05);
-            border-radius: 20px;
-            box-shadow: inset 0 0 50px #000;
         }
-
-        /* التابلت الطافي */
-        .floating-tablet {
-            width: 300px;
-            height: 200px;
-            background: #111;
-            border-radius: 15px;
-            border: 4px solid #444;
-            position: relative;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-            transform: perspective(800px) rotateY(-10deg) rotateX(5deg);
-            transition: transform 0.5s ease;
-            overflow: hidden;
-            z-index: 10;
-        }
-
-        .floating-tablet:hover {
-            transform: perspective(800px) rotateY(0deg) rotateX(0deg) scale(1.05);
-        }
-
-        /* شاشة التابلت (صورة المستخدم) */
-        .tablet-screen {
+        /* خط المسح للذكاء الاصطناعي */
+        .scanner-line {
+            height: 2px;
+            background: #00F0FF;
+            box-shadow: 0 0 10px #00F0FF;
+            position: absolute;
             width: 100%;
-            height: 100%;
-            object-fit: cover;
-            background-color: #222;
-        }
-
-        /* واجهة التحكم فوق السبيس */
-        .controls-overlay {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(5px);
-            padding: 15px;
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.1);
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            z-index: 20;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .avatar {
-            width: 40px; height: 40px;
-            border-radius: 50%;
-            background: #334155;
-        }
-
-        /* أزرار التحميل */
-        .btn {
-            background: var(--accent);
-            color: #000;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.2s;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn:hover {
-            background: #0ea5e9;
-            box-shadow: 0 0 15px var(--accent);
-        }
-
-        .btn-upload {
-            background: transparent;
-            border: 1px solid var(--accent);
-            color: var(--accent);
-        }
-
-        .btn-upload:hover {
-            background: rgba(56, 189, 248, 0.1);
-            color: #fff;
-            box-shadow: none;
-        }
-
-        /* --- قسم الإعلانات (AdSense) --- */
-        .ads-section {
-            background-color: var(--bg-card);
-            border-radius: 15px;
-            padding: 20px;
-            border: 1px solid #334155;
-        }
-
-        .ads-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-            color: var(--text-main);
-        }
-
-        .ads-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        /* شكل الإعلان الوهمي (مكان وضع الكود الحقيقي) */
-        .ad-slot {
-            background-color: #0f172a;
-            height: 150px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #475569;
-            border: 1px dashed #334155;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .ad-label {
-            position: absolute;
-            top: 5px; right: 5px;
-            background: #fbbf24;
-            color: #000;
-            font-size: 10px;
-            padding: 2px 5px;
-            border-radius: 3px;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            body { flex-direction: column; }
-            .sidebar { width: 100%; height: auto; padding: 10px; flex-direction: row; overflow-x: auto; }
-            .nav-menu { display: flex; gap: 10px; }
-            .space-container { height: 350px; }
-            .floating-tablet { width: 200px; height: 133px; }
+            z-index: 50;
+            display: none;
         }
     </style>
 </head>
-<body>
+<body class="flex flex-col md:flex-row min-h-screen bg-space text-gray-200">
 
-    <aside class="sidebar">
-        <div class="logo">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-            Space<span>Selfie</span>
+    <!-- القائمة الجانبية (Sidebar) -->
+    <aside class="w-full md:w-64 bg-panel border-l border-gray-800 flex flex-col z-20">
+        <div class="p-6 flex items-center gap-3 border-b border-gray-800">
+            <i class="fa-solid fa-satellite-dish text-accent text-2xl"></i>
+            <div>
+                <h1 class="font-orbitron font-bold text-xl tracking-wider text-white">ORBIT<span class="text-accent">AI</span></h1>
+                <p class="text-xs text-gray-500">منصة المحاكاة الفضائية</p>
+            </div>
         </div>
-        <ul class="nav-menu">
-            <li class="nav-item active">🚀 الرئيسية</li>
-            <li class="nav-item">📸 المعرض</li>
-            <li class="nav-item">🌍 خلفيات</li>
-            <li class="nav-item">💎 اشتراك VIP</li>
-            <li class="nav-item">⚙️ الإعدادات</li>
-        </ul>
-        <div style="margin-top: auto; color: #475569; font-size: 0.8rem;">
-            &copy; 2024 SpaceSelfie Inc.
+        
+        <nav class="flex-1 p-4 space-y-2">
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg bg-accent/10 text-accent border border-accent/20 transition-all">
+                <i class="fa-solid fa-camera"></i>
+                <span class="font-bold">استوديو المحاكاة</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 text-gray-400 transition-all">
+                <i class="fa-solid fa-images"></i>
+                <span>معرض الصور</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 text-gray-400 transition-all">
+                <i class="fa-solid fa-rocket"></i>
+                <span>رحلاتي السابقة</span>
+            </a>
+            <div class="mt-8 px-3">
+                <p class="text-xs font-bold text-gray-600 mb-2">الأدوات الذكية</p>
+                <a href="#" class="flex items-center gap-3 p-2 text-sm text-gray-400 hover:text-white">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span>تحسين الصورة تلقائياً</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- إعلان جانبي صغير -->
+        <div class="p-4">
+            <div class="bg-black/50 border border-dashed border-gray-700 rounded-lg h-32 flex flex-col items-center justify-center text-gray-600 text-xs">
+                <span class="bg-yellow-500/20 text-yellow-500 px-1 rounded mb-1">AD</span>
+                <span>مساحة إعلانية مربعة</span>
+            </div>
         </div>
     </aside>
 
-    <main class="main-content">
+    <!-- المحتوى الرئيسي -->
+    <main class="flex-1 flex flex-col relative overflow-hidden">
         
-        <header style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <h1 style="font-size: 1.8rem;">"Space Selfie" Space</h1>
-                <p style="color: var(--text-muted);">انشر صورتك من خارج هذا العالم!</p>
+        <!-- الهيدر العلوي -->
+        <header class="h-16 border-b border-gray-800 bg-panel/50 backdrop-blur flex items-center justify-between px-6 z-10">
+            <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                <span class="text-xs font-mono text-green-500">AI ENGINE: ONLINE</span>
             </div>
-            <button class="btn" onclick="document.getElementById('fileInput').click()">+ رفع صورة جديدة</button>
-            <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="loadImage(event)">
+            <div class="flex items-center gap-4">
+                <button class="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center hover:bg-gray-700"><i class="fa-solid fa-bell text-gray-400"></i></button>
+                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-accent to-blue-600 border border-white/20"></div>
+            </div>
         </header>
 
-        <div class="space-container" id="captureArea">
+        <!-- منطقة العمل (Workspace) -->
+        <div class="flex-1 p-4 md:p-8 overflow-y-auto relative">
             
-            <div class="cupola-overlay"></div>
-
-            <div class="floating-tablet">
-                <img src="https://via.placeholder.com/400x300/000000/FFFFFF?text=Upload+Your+Selfie" alt="Selfie" class="tablet-screen" id="userImage">
+            <!-- خلفية الفضاء المتحركة (Background) -->
+            <div class="absolute inset-0 z-0 opacity-40">
+                <!-- صورة خلفية للأرض من الفضاء عالية الجودة -->
+                <img src="https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=2072&auto=format&fit=crop" class="w-full h-full object-cover" alt="Space Background">
             </div>
 
-            <div class="controls-overlay">
-                <div class="user-info">
-                    <div class="avatar"></div>
+            <div class="relative z-10 max-w-5xl mx-auto flex flex-col gap-6">
+                
+                <!-- عنوان وتحكم -->
+                <div class="flex justify-between items-end">
                     <div>
-                        <div style="font-size: 0.9rem; font-weight: bold;">صورة المستخدم</div>
-                        <div style="font-size: 0.7rem; color: #ccc;">جارِ البث من المحطة الدولية...</div>
+                        <h2 class="text-3xl font-bold text-white mb-1">مركز القيادة <span class="text-accent text-sm font-mono border border-accent px-2 rounded">v2.0</span></h2>
+                        <p class="text-gray-400 text-sm">قم برفع صورتك وسيقوم الذكاء الاصطناعي بدمجها في المحطة الدولية.</p>
+                    </div>
+                    <button onclick="document.getElementById('uploadInput').click()" class="bg-accent hover:bg-cyan-400 text-black font-bold py-2 px-6 rounded-lg shadow-[0_0_15px_rgba(0,240,255,0.4)] transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-upload"></i> رفع صورة
+                    </button>
+                    <input type="file" id="uploadInput" accept="image/*" class="hidden" onchange="processImage(event)">
+                </div>
+
+                <!-- منطقة المحاكاة (The Simulation) -->
+                <div class="glass-panel rounded-2xl p-1 md:p-4 h-[500px] flex items-center justify-center relative overflow-hidden group">
+                    
+                    <!-- واجهة المحاكاة (Overlay UI) -->
+                    <div class="absolute top-4 left-4 font-mono text-xs text-accent/70 z-20 pointer-events-none">
+                        <p>ALTITUDE: 408 KM</p>
+                        <p>SPEED: 27,600 KM/H</p>
+                        <p>TEMP: -157°C</p>
+                    </div>
+
+                    <!-- التابلت العائم -->
+                    <div id="tabletDevice" class="tablet-frame relative w-[300px] h-[200px] md:w-[600px] md:h-[400px] bg-black rounded-xl border-4 border-gray-800 transition-transform duration-700 animate-float">
+                        
+                        <!-- الشاشة الداخلية -->
+                        <div class="relative w-full h-full overflow-hidden rounded-lg bg-gray-900">
+                            
+                            <!-- الصورة المرفوعة -->
+                            <img id="userImage" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover opacity-50 filter grayscale transition-all duration-1000" alt="User Screen">
+                            
+                            <!-- طبقة الانعكاس -->
+                            <div class="screen-reflection absolute inset-0 z-10"></div>
+                            
+                            <!-- واجهة الذكاء الاصطناعي (Loading UI) -->
+                            <div id="aiOverlay" class="absolute inset-0 bg-black/80 z-20 flex flex-col items-center justify-center text-center hidden">
+                                <i class="fa-solid fa-circle-nodes text-accent text-4xl animate-spin mb-4"></i>
+                                <div class="text-accent font-mono text-sm space-y-1">
+                                    <p id="aiLog1" class="opacity-0">جاري تحليل الأبعاد...</p>
+                                    <p id="aiLog2" class="opacity-0">مطابقة الإضاءة الكونية...</p>
+                                    <p id="aiLog3" class="opacity-0">دمج الطبقات...</p>
+                                </div>
+                                <div class="scanner-line animate-scan"></div>
+                            </div>
+
+                            <!-- شعار التطبيق داخل التابلت -->
+                            <div class="absolute bottom-4 right-4 z-10">
+                                <span class="text-white/50 text-xs font-orbitron tracking-widest">SPACE<span class="text-accent">OS</span></span>
+                            </div>
+                        </div>
+
+                        <!-- الكاميرا -->
+                        <div class="absolute top-1/2 -right-3 w-1 h-12 bg-gray-700 rounded-r-md"></div>
+                    </div>
+
+                </div>
+
+                <!-- قسم الإعلانات (AdSense) - الجزء الأكثر ربحاً -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- وحدة إعلانية 1 -->
+                    <div class="glass-panel p-4 rounded-xl border border-dashed border-gray-700 min-h-[120px] flex items-center justify-center relative">
+                        <span class="absolute top-2 left-2 text-[10px] text-gray-500 bg-gray-900 px-1">ADVERTISEMENT</span>
+                        <div class="text-center text-gray-600">
+                            <i class="fa-brands fa-google text-2xl mb-2"></i>
+                            <p class="text-sm">ضع كود Google AdSense (Display Ad) هنا</p>
+                        </div>
+                    </div>
+                    
+                    <!-- وحدة إعلانية 2 -->
+                    <div class="glass-panel p-4 rounded-xl border border-dashed border-gray-700 min-h-[120px] flex items-center justify-center relative">
+                        <span class="absolute top-2 left-2 text-[10px] text-gray-500 bg-gray-900 px-1">SPONSORED</span>
+                        <div class="text-center text-gray-600">
+                            <i class="fa-brands fa-google text-2xl mb-2"></i>
+                            <p class="text-sm">ضع كود Google AdSense (Native Ad) هنا</p>
+                        </div>
                     </div>
                 </div>
-                <button class="btn btn-upload" onclick="alert('جاري حفظ الصورة...')">💾 تحميل الصورة</button>
+
+                <!-- زر التحميل النهائي -->
+                <div class="text-center mt-4 pb-8">
+                    <button onclick="downloadImage()" id="downloadBtn" class="hidden bg-white text-black font-bold py-3 px-8 rounded-full hover:bg-gray-200 transition-colors shadow-lg">
+                        <i class="fa-solid fa-download mr-2"></i> تحميل الصورة النهائية
+                    </button>
+                </div>
+
             </div>
         </div>
-
-        <section class="ads-section">
-            <div class="ads-header">
-                <h3>Google AdSense</h3>
-                <span style="color: var(--accent);">سيربحن الصمل (إعلاناتك هنا)</span>
-            </div>
-            
-            <div class="ads-grid">
-                <div class="ad-slot">
-                    <span class="ad-label">Ad</span>
-                    <div style="text-align: center;">
-                        <h4>مساحة إعلانية مميزة</h4>
-                        <p style="font-size: 0.8rem;">ضع كود AdSense Responsive هنا</p>
-                    </div>
-                </div>
-
-                <div class="ad-slot">
-                    <span class="ad-label">Ad</span>
-                    <div style="text-align: center;">
-                        <h4>بنر إعلاني عريض</h4>
-                        <p style="font-size: 0.8rem;">مكان مثالي للإعلانات الصورية</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
     </main>
 
+    <!-- سكريبت المنطق (Logic) -->
     <script>
-        // دالة لعرض الصورة المرفوعة داخل التابلت فوراً
-        function loadImage(event) {
-            const image = document.getElementById('userImage');
+        const aiOverlay = document.getElementById('aiOverlay');
+        const userImage = document.getElementById('userImage');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const logs = [
+            document.getElementById('aiLog1'),
+            document.getElementById('aiLog2'),
+            document.getElementById('aiLog3')
+        ];
+
+        function processImage(event) {
             const file = event.target.files[0];
-            
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    image.src = e.target.result;
-                }
-                reader.readAsDataURL(file);
+            if (!file) return;
+
+            // 1. قراءة الصورة
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                userImage.src = e.target.result;
+                
+                // إعادة تعيين الستايل لبدء المحاكاة
+                userImage.classList.add('grayscale', 'opacity-50');
+                userImage.classList.remove('opacity-100');
+                
+                startAISimulation();
             }
+            reader.readAsDataURL(file);
+        }
+
+        function startAISimulation() {
+            // إظهار واجهة الذكاء الاصطناعي
+            aiOverlay.classList.remove('hidden');
+            document.querySelector('.scanner-line').style.display = 'block';
+            downloadBtn.classList.add('hidden');
+
+            // محاكاة خطوات المعالجة (توقيتات مختلفة)
+            setTimeout(() => { logs[0].classList.remove('opacity-0'); logs[0].classList.add('text-green-400'); }, 500);
+            setTimeout(() => { logs[1].classList.remove('opacity-0'); logs[1].classList.add('text-green-400'); }, 1500);
+            setTimeout(() => { logs[2].classList.remove('opacity-0'); logs[2].classList.add('text-green-400'); }, 2500);
+
+            // إنهاء المحاكاة وإظهار النتيجة
+            setTimeout(() => {
+                aiOverlay.classList.add('hidden');
+                
+                // تطبيق الفلاتر النهائية "تأثير الذكاء الاصطناعي"
+                // إزالة اللون الرمادي وجعل الصورة ساطعة كشاشة
+                userImage.classList.remove('grayscale', 'opacity-50');
+                userImage.classList.add('opacity-100', 'contrast-125', 'brightness-110');
+                
+                // إظهار زر التحميل
+                downloadBtn.classList.remove('hidden');
+                
+                // رسالة نجاح صغيرة
+                alert("✨ تم تحسين الصورة بواسطة AI ومطابقة إضاءة المحطة الفضائية!");
+                
+            }, 3500);
+        }
+
+        function downloadImage() {
+            // هنا يمكنك إضافة كود html2canvas لالتقاط صورة فعلية
+            // للتبسيط، سنظهر رسالة
+            alert("جاري تجهيز الصورة عالية الدقة للتحميل...");
         }
     </script>
 </body>
 </html>
+
