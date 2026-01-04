@@ -1,355 +1,265 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Space Selfie | سيلفي الفضاء</title>
+    <title>Space Selfie Station</title>
     <style>
-        /* --- الأساسيات والتصميم العام --- */
-        :root {
-            --primary-color: #00f0ff; /* اللون السماوي النيون */
-            --bg-dark: #0a0e17;
-            --panel-bg: rgba(16, 20, 30, 0.85);
-        }
-
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-dark);
-            color: white;
-            overflow-x: hidden;
+        body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        /* واجهة المستخدم فوق الـ 3D */
+        #ui-container {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; /* يسمح بالنقر على الـ 3D */
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
+            justify-content: space-between;
         }
 
-        /* --- خلفية الفضاء المتحركة --- */
-        .space-background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            /* صورة الأرض من الفضاء - يمكنك تغيير الرابط لاحقاً */
-            background: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop') no-repeat center center fixed;
-            background-size: cover;
-            animation: moveBackground 60s linear infinite; /* تحريك بطيء للخلفية */
-        }
-
-        @keyframes moveBackground {
-            0% { transform: scale(1.1); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1.1); }
-        }
-
-        /* --- واجهة الكوبولا (الإطار المحيط) --- */
-        .cupola-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            box-shadow: inset 0 0 100px #000;
-            background: radial-gradient(circle, transparent 50%, #000 150%);
-            z-index: 0;
-        }
-
-        /* --- الهيدر والعناوين --- */
-        header {
-            text-align: center;
+        /* الشريط العلوي واللغات */
+        .top-bar {
             padding: 20px;
-            z-index: 10;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
-        }
-
-        h1 {
-            font-size: 3rem;
-            margin: 0;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: var(--primary-color);
-            text-shadow: 0 0 20px var(--primary-color);
-        }
-
-        p.subtitle {
-            font-size: 1.2rem;
-            color: #ccc;
-        }
-
-        /* --- منطقة العمل الرئيسية --- */
-        .main-stage {
-            flex: 1;
             display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            z-index: 5;
-            padding: 20px;
+            justify-content: space-between;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+            pointer-events: auto;
         }
 
-        /* --- التابلت الطافي --- */
-        .tablet-container {
-            position: relative;
-            width: 600px;
-            height: 400px;
-            background: #111;
+        .logo { color: #00d2ff; font-size: 24px; font-weight: bold; text-shadow: 0 0 10px #00d2ff; }
+        
+        select#language-selector {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid #00d2ff;
+            padding: 5px 15px;
             border-radius: 20px;
-            border: 4px solid #333;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 0 2px #555;
-            overflow: hidden;
-            transition: transform 0.3s ease;
-            transform-style: preserve-3d;
-            animation: floatTablet 6s ease-in-out infinite;
+            cursor: pointer;
         }
 
-        @keyframes floatTablet {
-            0% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-15px) rotate(1deg); }
-            100% { transform: translateY(0px) rotate(0deg); }
-        }
-
-        /* كاميرا التابلت */
-        .tablet-camera {
-            position: absolute;
-            top: 50%;
-            left: 10px; /* للوضع الأفقي */
-            width: 10px;
-            height: 10px;
-            background: #222;
-            border-radius: 50%;
-            z-index: 20;
-        }
-
-        /* الشاشة داخل التابلت */
-        .tablet-screen {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            right: 15px;
-            bottom: 15px;
-            background: #000;
-            border-radius: 10px;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* الصورة الناتجة (Canvas) */
-        #resultCanvas {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: cover;
-        }
-
-        /* عناصر واجهة التابلت (UI وهمي) */
-        .tablet-ui {
-            position: absolute;
-            bottom: 20px;
-            left: 0;
-            width: 100%;
+        /* أدوات التحكم في الأسفل */
+        .controls {
+            padding: 30px;
             text-align: center;
-            z-index: 10;
-            pointer-events: none;
-        }
-        .rec-indicator {
-            display: inline-block;
-            color: red;
-            font-weight: bold;
-            font-size: 14px;
-            animation: blink 1s infinite;
-        }
-        @keyframes blink { 50% { opacity: 0; } }
-
-        /* --- أدوات التحكم --- */
-        .controls-panel {
-            background: var(--panel-bg);
-            padding: 20px;
-            border-top: 2px solid var(--primary-color);
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            pointer-events: auto;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            gap: 20px;
-            z-index: 20;
-            backdrop-filter: blur(10px);
+            gap: 15px;
         }
 
         .btn {
-            background: transparent;
-            border: 2px solid var(--primary-color);
-            color: var(--primary-color);
+            background: linear-gradient(45deg, #00d2ff, #3a7bd5);
+            border: none;
             padding: 12px 30px;
-            font-size: 1.1rem;
+            color: white;
+            font-size: 16px;
+            border-radius: 30px;
             cursor: pointer;
-            border-radius: 5px;
-            transition: all 0.3s;
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.5);
+            transition: transform 0.2s;
             font-weight: bold;
-            text-transform: uppercase;
         }
+        .btn:hover { transform: scale(1.05); }
+        .btn-secondary { background: #444; box-shadow: none; }
 
-        .btn:hover {
-            background: var(--primary-color);
-            color: #000;
-            box-shadow: 0 0 15px var(--primary-color);
-        }
-
-        input[type="file"] {
-            display: none;
-        }
-
-        /* --- مساحات الإعلانات (لجني الأرباح) --- */
+        /* مكان الإعلانات (لأرباحك) */
         .ad-space {
-            width: 100%;
-            height: 90px;
-            background: rgba(255, 255, 255, 0.1);
+            position: absolute;
+            top: 50%; right: 20px;
+            transform: translateY(-50%);
+            width: 160px; height: 600px;
+            background: rgba(255,255,255,0.05);
             border: 1px dashed #555;
+            color: #555;
             display: flex;
-            justify-content: center;
             align-items: center;
-            color: #aaa;
-            font-size: 0.9rem;
-            margin-top: 10px;
+            justify-content: center;
+            pointer-events: auto;
         }
 
-        /* الاستجابة للجوال */
-        @media (max-width: 768px) {
-            .tablet-container {
-                width: 90%;
-                height: 250px;
-            }
-            h1 { font-size: 2rem; }
-        }
-
+        /* إخفاء زر رفع الملف الافتراضي */
+        input[type="file"] { display: none; }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
-    <div class="space-background"></div>
-    <div class="cupola-overlay"></div>
+    <div id="ui-container">
+        <div class="top-bar">
+            <div class="logo">🚀 SpaceSelfie</div>
+            <select id="language-selector" onchange="changeLanguage()">
+                <option value="en">English</option>
+                <option value="ar">العربية</option>
+                <option value="fr">Français</option>
+                <option value="es">Español</option>
+                <option value="de">Deutsch</option>
+                <option value="zh">Chinese</option>
+                </select>
+        </div>
 
-    <header>
-        <h1>Space Selfie</h1>
-        <p class="subtitle">التقط صورتك من محطة الفضاء الدولية فوراً!</p>
-        <div class="ad-space">Google Adsense Banner (728x90) goes here</div>
-    </header>
+        <div class="ad-space">
+            Google AdSense Area
+        </div>
 
-    <div class="main-stage">
-        <div class="tablet-container" id="tabletFrame">
-            <div class="tablet-camera"></div>
-            <div class="tablet-screen">
-                <canvas id="resultCanvas"></canvas>
-                <div id="placeholderText" style="color: #555; text-align: center;">
-                    اضغط "رفع صورة"<br>لتبدأ الرحلة
-                </div>
-            </div>
-            <div class="tablet-ui">
-                <span class="rec-indicator">● REC</span>
-                <span style="color: white; margin-right: 10px; font-size: 12px;">ISS LIVE FEED</span>
-            </div>
+        <div class="controls">
+            <h2 id="instruction-text" style="color: white; text-shadow: 0 2px 4px black;">Upload your photo to space!</h2>
+            
+            <input type="file" id="imageUpload" accept="image/*">
+            <button class="btn" onclick="document.getElementById('imageUpload').click()" id="upload-btn">📂 Upload Photo</button>
+            <button class="btn btn-secondary" onclick="takeSnapshot()" id="download-btn">📸 Download High Res</button>
         </div>
     </div>
 
-    <div class="controls-panel">
-        <input type="file" id="imageInput" accept="image/*">
-        <button class="btn" onclick="document.getElementById('imageInput').click()">1. ارفع صورتك</button>
-        <button class="btn" onclick="generateSelfie()">2. معالجة وتثبيت</button>
-        <button class="btn" style="border-color: #00ff00; color: #00ff00;" onclick="downloadImage()">3. تحميل الصورة</button>
-    </div>
-
     <script>
-        const canvas = document.getElementById('resultCanvas');
-        const ctx = canvas.getContext('2d');
-        const placeholderText = document.getElementById('placeholderText');
-        const imageInput = document.getElementById('imageInput');
+        // 1. إعداد المشهد الأساسي (Scene Setup)
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true }); // preserveDrawingBuffer مهم للتحميل
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio); // لجودة عالية جداً
+        document.body.appendChild(renderer.domElement);
 
-        let uploadedImage = null;
+        // 2. الإضاءة (محاكاة الشمس)
+        const ambientLight = new THREE.AmbientLight(0x333333);
+        scene.add(ambientLight);
+        const sunLight = new THREE.DirectionalLight(0xffffff, 1.5);
+        sunLight.position.set(5, 3, 5);
+        scene.add(sunLight);
 
-        // إعداد أبعاد الكانفاس الافتراضية
-        canvas.width = 1280;
-        canvas.height = 720;
+        // 3. إنشاء النجوم (Starfield)
+        const starsGeometry = new THREE.BufferGeometry();
+        const starsCount = 5000;
+        const posArray = new Float32Array(starsCount * 3);
+        for(let i = 0; i < starsCount * 3; i++) {
+            posArray[i] = (Math.random() - 0.5) * 100; // توزيع النجوم
+        }
+        starsGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        const starsMaterial = new THREE.PointsMaterial({size: 0.05, color: 0xffffff});
+        const starMesh = new THREE.Points(starsGeometry, starsMaterial);
+        scene.add(starMesh);
 
-        // عند رفع صورة
-        imageInput.addEventListener('change', function(e) {
+        // 4. إنشاء كوكب الأرض (Earth)
+        // ملاحظة: لكي تكون واقعية جداً تحتاج روابط Textures حقيقية. هنا نستخدم ألوان لتوضيح الفكرة.
+        const earthGeometry = new THREE.SphereGeometry(2, 64, 64);
+        const earthMaterial = new THREE.MeshPhongMaterial({
+            map: new THREE.TextureLoader().load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_atmos_2048.jpg'),
+            specular: new THREE.Color('grey'),
+            shininess: 10
+        });
+        const earth = new THREE.Mesh(earthGeometry, earthMaterial);
+        scene.add(earth);
+
+        // 5. إنشاء "شاشة المحطة" (Station Screen)
+        // في المشروع الحقيقي، هنا ستقوم بتحميل موديل 3D للمحطة بصيغة GLTF
+        // الآن سنصنع "إطار" يمثل التابلت أو الشاشة
+        const screenGroup = new THREE.Group();
+
+        // إطار الشاشة (الأسود)
+        const frameGeo = new THREE.BoxGeometry(1.6, 1, 0.1);
+        const frameMat = new THREE.MeshLambertMaterial({ color: 0x111111 });
+        const frame = new THREE.Mesh(frameGeo, frameMat);
+        screenGroup.add(frame);
+
+        // الشاشة نفسها (التي ستظهر عليها الصورة)
+        const screenGeo = new THREE.PlaneGeometry(1.5, 0.9);
+        const screenMat = new THREE.MeshBasicMaterial({ color: 0x000000 }); // أسود في البداية
+        const displayScreen = new THREE.Mesh(screenGeo, screenMat);
+        displayScreen.position.z = 0.06; // تبرز قليلاً للأمام
+        screenGroup.add(displayScreen);
+
+        // وضع الشاشة أمام الكاميرا لتبدو كأنها داخل محطة تدور
+        screenGroup.position.set(0, 0, 3.5); 
+        scene.add(screenGroup);
+
+        camera.position.z = 5;
+
+        // 6. منطق رفع الصورة (Upload Logic)
+        const imageUpload = document.getElementById('imageUpload');
+        imageUpload.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(event) {
-                    const img = new Image();
-                    img.onload = function() {
-                        uploadedImage = img;
-                        placeholderText.style.display = 'none';
-                        drawPreview(); // عرض معاينة أولية
-                    }
-                    img.src = event.target.result;
-                }
+                    const imgObj = new Image();
+                    imgObj.src = event.target.result;
+                    imgObj.onload = function() {
+                        const texture = new THREE.Texture(imgObj);
+                        texture.needsUpdate = true;
+                        // تطبيق الصورة على خامة الشاشة
+                        displayScreen.material.map = texture;
+                        displayScreen.material.color.set(0xffffff); // جعلها بيضاء لتظهر الألوان
+                        displayScreen.material.needsUpdate = true;
+                    };
+                };
                 reader.readAsDataURL(file);
             }
         });
 
-        // دالة الرسم والمعالجة
-        function drawPreview() {
-            if (!uploadedImage) return;
-
-            // 1. مسح الكانفاس
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // 2. رسم خلفية وهمية داخل التابلت (اختياري)
-            ctx.fillStyle = "#1a1a1a";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // 3. حساب الأبعاد للحفاظ على نسبة العرض للطول (Cover)
-            const hRatio = canvas.width / uploadedImage.width;
-            const vRatio = canvas.height / uploadedImage.height;
-            const ratio = Math.max(hRatio, vRatio);
+        // 7. التحريك (Animation Loop)
+        function animate() {
+            requestAnimationFrame(animate);
             
-            const centerShift_x = (canvas.width - uploadedImage.width * ratio) / 2;
-            const centerShift_y = (canvas.height - uploadedImage.height * ratio) / 2;
+            // تدوير الأرض ببطء (واقعية)
+            earth.rotation.y += 0.0005;
+            
+            // تحريك النجوم قليلاً
+            starMesh.rotation.y -= 0.0002;
 
-            // 4. رسم صورة المستخدم
-            ctx.drawImage(uploadedImage, 0, 0, uploadedImage.width, uploadedImage.height,
-                                       centerShift_x, centerShift_y, uploadedImage.width * ratio, uploadedImage.height * ratio);
-            
-            // 5. إضافة فلتر "شاشة رقمية" خفيف
-            ctx.fillStyle = "rgba(0, 240, 255, 0.1)";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // إضافة نص تقني
-            ctx.font = "30px monospace";
-            ctx.fillStyle = "#00f0ff";
-            ctx.fillText("ISS CONNECTION: STABLE", 50, 50);
+            // جعل الشاشة تتحرك حركة طفيفة كأنها تسبح في انعدام الجاذبية
+            screenGroup.rotation.z = Math.sin(Date.now() * 0.0005) * 0.02;
+            screenGroup.position.y = Math.sin(Date.now() * 0.001) * 0.05;
+
+            renderer.render(scene, camera);
         }
+        animate();
 
-        function generateSelfie() {
-            if (!uploadedImage) {
-                alert("الرجاء رفع صورة أولاً!");
-                return;
-            }
-            // إضافة تأثير تشويش بسيط لمحاكاة الاتصال الفضائي
-            drawPreview();
-            
-            // ومضة خضراء للإشارة للنجاح
-            const tablet = document.getElementById('tabletFrame');
-            tablet.style.boxShadow = "0 0 50px #00ff00";
-            setTimeout(() => {
-                tablet.style.boxShadow = "0 20px 50px rgba(0,0,0,0.8)";
-            }, 500);
-        }
-
-        function downloadImage() {
-            if (!uploadedImage) {
-                alert("لا توجد صورة لتحميلها!");
-                return;
-            }
-            
-            // هنا نقوم بتحميل محتوى الكانفاس فقط (صورة المستخدم المعدلة)
-            // في النسخة المطورة، يمكن استخدام مكتبة html2canvas لتصوير الشاشة كاملة مع الخلفية
+        // 8. منطق التحميل (Download/Snapshot)
+        function takeSnapshot() {
+            // إخفاء الـ UI مؤقتاً إذا أردت (اختياري، هنا الـ UI HTML منفصل فلا يظهر في الـ Canvas)
+            render(); // ريندر لضمان آخر لقطة
             const link = document.createElement('a');
-            link.download = 'space-selfie.png';
-            link.href = canvas.toDataURL();
+            link.download = 'My-Space-Selfie.png';
+            // جودة عالية جداً
+            link.href = renderer.domElement.toDataURL('image/png', 1.0); 
             link.click();
+        }
+
+        function render() {
+            renderer.render(scene, camera);
+        }
+
+        // ضبط الحجم عند تغيير النافذة
+        window.addEventListener('resize', onWindowResize, false);
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // 9. الترجمة (Localization Logic)
+        const translations = {
+            en: { title: "Upload your photo to space!", btnUp: "📂 Upload Photo", btnDown: "📸 Download High Res" },
+            ar: { title: "ارفع صورتك إلى الفضاء!", btnUp: "📂 رفع صورة", btnDown: "📸 تحميل بدقة عالية" },
+            fr: { title: "Téléchargez votre photo dans l'espace!", btnUp: "📂 Télécharger", btnDown: "📸 Enregistrer" },
+            // أضف باقي اللغات هنا
+        };
+
+        function changeLanguage() {
+            const lang = document.getElementById('language-selector').value;
+            const t = translations[lang] || translations['en'];
+            
+            document.getElementById('instruction-text').innerText = t.title;
+            document.getElementById('upload-btn').innerText = t.btnUp;
+            document.getElementById('download-btn').innerText = t.btnDown;
+            
+            // تعديل اتجاه النص للعربية
+            if(lang === 'ar') {
+                document.body.style.direction = 'rtl';
+            } else {
+                document.body.style.direction = 'ltr';
+            }
         }
     </script>
 </body>
