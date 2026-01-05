@@ -154,16 +154,17 @@
     </footer>
 
     <script>
-        const API_KEY = "AIzaSyAbOX7om7AdG0bdadPpMjn72rrhsfQO-fU"; 
-        let currentLang = 'en'; // Changed Default to English
+        const API_KEY = ""; // System will inject the key automatically
+        let currentLang = 'en'; 
         let currentRegion = 0;
         let userImageBase64 = null;
+        let userImageMimeType = null; // Variable to store the correct mime type
 
         const languages = {
             en: { title: "Realistic Space Selfie", sub: "Real astronaut capturing you inside ISS", upload: "Click to upload your portrait", btn: "Launch Now", regions: ["Middle East", "Europe", "Africa", "Asia", "Americas"], dl: "Download 8K Image", loading: ["Analyzing face...", "Preparing space suit...", "Adjusting orbit light...", "Capturing final shot..."], transmission: "Transmitting data to orbit...", remaining: "Remaining" },
             ar: { title: "سيلفي الفضاء الواقعي", sub: "رائد فضاء حقيقي يصورك داخل محطة ISS", upload: "اضغط لرفع صورتك الشخصية", btn: "إقلاع الآن", regions: ["الشرق الأوسط", "أوروبا", "أفريقيا", "آسيا", "الأمريكتين"], dl: "تحميل الصورة 8K", loading: ["تحليل الوجه...", "تجهيز بدلة الفضاء...", "ضبط إضاءة المدار...", "التقاط الصورة النهائية..."], transmission: "جاري إرسال البيانات للمدار...", remaining: "متبقي" },
             zh: { title: "写实太空自拍", sub: "宇航员在国际空间站为您拍照", upload: "点击上传照片", btn: "立即转换", regions: ["中东", "欧洲", "非洲", "亚洲", "美洲"], dl: "下载 8K 图片", loading: ["分析面部...", "准备宇航服...", "调整轨道光线...", "拍摄最终样张..."], transmission: "数据传输至轨道...", remaining: "剩余" },
-            ko: { title: "사실적인 우주 셀카", sub: "ISS 내부의 100% 사실적인 시뮬레이션", upload: "사진 업로드", btn: "지금 발사", loading: ["चेहरा विश्लेषण...", "सूट तैयार करना...", "लाइटिंग सेट करना...", "फोटो खींचنا..."], regions: ["중동", "유럽", "아프리카", "아시아", "아메리카"], dl: "8K 이미지 다운로드", transmission: "궤도로 데이터 전송 중...", remaining: "남음" }
+            ko: { title: "사실적인 우주 셀카", sub: "ISS 내부의 100% 사실적인 시뮬레이션", upload: "사진 업로드", btn: "지금 발사", loading: ["체हरा विश्लेषण...", "सूट तैयार करना...", "लाइटिंग सेट करना...", "फोटो खींचنا..."], regions: ["중동", "유럽", "아프리카", "아시아", "아메리카"], dl: "8K 이미지 다운로드", transmission: "궤도로 데이터 전송 중...", remaining: "남음" }
         };
 
         function updateLanguage() {
@@ -197,6 +198,7 @@
         function handleFile(e) {
             const file = e.target.files[0];
             if(file) {
+                userImageMimeType = file.type; // Save the mime type
                 const reader = new FileReader();
                 reader.onload = (ev) => {
                     document.getElementById('imgPreview').src = ev.target.result;
@@ -209,7 +211,7 @@
         }
 
         async function startGeneration() {
-            if(!userImageBase64) return alert("Upload photo first!");
+            if(!userImageBase64) return alert(currentLang === 'ar' ? "الرجاء رفع صورة أولاً!" : "Upload photo first!");
             
             const overlay = document.getElementById('loadingOverlay');
             const pBar = document.getElementById('pBar');
@@ -217,7 +219,7 @@
             const statusTxt = document.getElementById('loadingText');
             
             overlay.classList.remove('hidden');
-            let timeLeft = 20; // 20 Seconds wait for ads
+            let timeLeft = 20; // 20 Seconds waiting simulation
             let progress = 0;
             const t = languages[currentLang] || languages['en'];
 
@@ -246,27 +248,42 @@
             const prompt = `A hyper-realistic 8K first-person perspective or close-up inside the ISS Cupola module. A real astronaut in a detailed white space suit is visible, his hands are holding up a professional tablet or a physical high-res photograph showing the face from this image. The astronaut's gloved hand is clearly visible, making it look 100% real and tangible. The background through the glass shows a breathtaking Earth over ${region}. Natural cinematic lighting, space station interior details, zero AI artifacts, looks like a real memory captured in orbit.`;
 
             try {
+                // IMPORTANT: Using 'gemini-2.5-flash-image-preview' for image editing/generation
+                // Using dynamic MIME type instead of hardcoded 'image/png'
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${API_KEY}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{
-                            parts: [{ text: prompt }, { inlineData: { mimeType: "image/png", data: userImageBase64 } }]
+                            parts: [
+                                { text: prompt }, 
+                                { inlineData: { mimeType: userImageMimeType || "image/png", data: userImageBase64 } }
+                            ]
                         }],
                         generationConfig: { responseModalities: ['TEXT', 'IMAGE'] }
                     })
                 });
 
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+                }
+
                 const data = await response.json();
+                
+                // Check if we have a valid image candidate
                 const img = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
 
                 if(img) {
                     document.getElementById('finalImg').src = `data:image/png;base64,${img}`;
                     document.getElementById('resultView').classList.remove('hidden');
                     document.getElementById('emptyView').classList.add('hidden');
+                } else {
+                    throw new Error("No image generated.");
                 }
+
             } catch(e) {
                 console.error(e);
+                alert(currentLang === 'ar' ? "حدث خطأ أثناء المعالجة. يرجى المحاولة مرة أخرى." : "Error processing image. Please try again.");
             } finally {
                 document.getElementById('loadingOverlay').classList.add('hidden');
             }
