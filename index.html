@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Selfie Pro - AI Global</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Inter:wght@400;700;900&display=swap');
+        
+        body {
+            background-color: #050508;
+            color: white;
+            overflow-x: hidden;
+        }
+        
+        .rtl { font-family: 'Cairo', sans-serif; direction: rtl; }
+        .ltr { font-family: 'Inter', sans-serif; direction: ltr; }
+
+        .glass {
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .loader {
+            border: 3px solid rgba(59, 130, 246, 0.1);
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .gradient-btn {
+            background: linear-gradient(90deg, #2563eb, #60a5fa);
+            transition: all 0.3s ease;
+        }
+
+        .gradient-btn:hover {
+            box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="rtl" id="bodyTag">
+
+    <!-- Header -->
+    <nav class="border-b border-white/10 bg-black/40 backdrop-blur-xl sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="bg-blue-600 p-2 rounded-lg">
+                    <i data-lucide="rocket" class="w-5 h-5"></i>
+                </div>
+                <span class="font-black text-lg tracking-tighter">SpaceSelfie <span class="text-blue-500">PRO</span></span>
+            </div>
+            
+            <div class="flex items-center gap-2 bg-white/5 rounded-full px-3 py-1 border border-white/10">
+                <i data-lucide="globe" class="w-3 h-3 text-white/40"></i>
+                <select id="langSelect" onchange="changeLang()" class="bg-transparent text-[10px] font-bold border-none outline-none cursor-pointer">
+                    <option value="ar">العربية</option>
+                    <option value="en">English</option>
+                    <option value="zh">中文</option>
+                    <option value="ko">한국어</option>
+                    <option value="fr">Français</option>
+                    <option value="es">Español</option>
+                </select>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-5xl mx-auto px-6 py-10">
+        <!-- Top Ad -->
+        <div class="w-full h-24 bg-white/5 border border-white/10 rounded-2xl mb-10 flex items-center justify-center text-[10px] text-white/20 tracking-[0.5em]">
+            ADVERTISEMENT SPACE
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <!-- Left Side -->
+            <div class="space-y-8">
+                <div>
+                    <h1 id="ui-title" class="text-4xl font-black mb-2">سيلفي الفضاء الواقعي</h1>
+                    <p id="ui-desc" class="text-white/40 text-lg">محاكاة واقعية 100% داخل مقصورة ISS</p>
+                </div>
+
+                <div class="glass rounded-[32px] p-8 space-y-8 shadow-2xl">
+                    <!-- Upload Box -->
+                    <div id="dropZone" onclick="document.getElementById('fileInput').click()" class="border-2 border-dashed border-white/10 rounded-[30px] p-10 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500/50 transition-all bg-white/[0.02]">
+                        <input type="file" id="fileInput" class="hidden" accept="image/*" onchange="handleFile(event)">
+                        <div id="previewContainer" class="hidden text-center">
+                            <img id="imgPreview" src="" class="w-28 h-28 object-cover rounded-full border-4 border-blue-500 shadow-xl mb-2">
+                        </div>
+                        <div id="uploadPlaceholder" class="text-center">
+                            <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i data-lucide="camera" class="w-8 h-8 text-white/20"></i>
+                            </div>
+                            <p id="ui-upload" class="text-sm font-bold text-white/40 uppercase tracking-widest">ارفع صورتك الشخصية</p>
+                        </div>
+                    </div>
+
+                    <!-- Regions -->
+                    <div>
+                        <p id="ui-region-label" class="text-[10px] font-black uppercase text-white/20 tracking-[0.3em] mb-4 text-center">اختر الموقع المداري</p>
+                        <div id="regionsList" class="grid grid-cols-3 gap-2">
+                            <!-- JS will fill this -->
+                        </div>
+                    </div>
+
+                    <button id="generateBtn" onclick="generate()" class="gradient-btn w-full py-5 rounded-2xl font-black text-lg flex items-center justify-center gap-3">
+                        <i data-lucide="sparkles" class="w-6 h-6"></i>
+                        <span id="ui-btn">إقلاع الآن</span>
+                    </button>
+                </div>
+
+                <div class="bg-blue-600/5 border border-blue-500/10 p-4 rounded-2xl flex items-center gap-4">
+                    <i data-lucide="shield-check" class="text-blue-500 w-5 h-5"></i>
+                    <p id="ui-privacy" class="text-[10px] text-blue-200/50">خصوصيتك محمية: لا نقوم بتخزين صورك الشخصية نهائياً.</p>
+                </div>
+            </div>
+
+            <!-- Right Side (Result) -->
+            <div class="relative">
+                <div id="resultBox" class="bg-[#0a0a0f] border border-white/10 rounded-[40px] overflow-hidden aspect-square shadow-[0_40px_100px_rgba(0,0,0,0.8)] relative flex flex-col items-center justify-center">
+                    
+                    <div id="loadingOverlay" class="hidden absolute inset-0 bg-[#050508] z-20 flex flex-col items-center justify-center p-10 text-center">
+                        <div class="loader mb-6"></div>
+                        <h3 id="ui-loading" class="text-xl font-black tracking-widest uppercase animate-pulse">جاري المعالجة المدارية...</h3>
+                    </div>
+
+                    <div id="placeholderView" class="text-center opacity-20">
+                        <i data-lucide="image" class="w-20 h-20 mx-auto mb-4"></i>
+                        <p class="text-[10px] font-black uppercase tracking-[0.5em]">Waiting for Signal</p>
+                    </div>
+
+                    <div id="resultView" class="hidden h-full w-full relative group">
+                        <img id="finalImg" src="" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                            <button onclick="downloadImg()" class="bg-white text-black p-4 rounded-full hover:scale-110 transition shadow-2xl">
+                                <i data-lucide="download" class="w-6 h-6"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 h-32 bg-white/[0.02] border border-white/5 rounded-3xl flex items-center justify-center text-white/10 text-[10px] font-black tracking-[0.5em]">
+                    SIDE AD SLOT
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="py-12 border-t border-white/5 opacity-20 text-center text-[10px] font-bold tracking-[0.4em]">
+        © 2024 SPACESELFIE GLOBAL AI NETWORK
+    </footer>
+
+    <script>
+        const API_KEY = ""; // Environment Key
+        let selectedLang = 'ar';
+        let currentRegion = 0;
+        let base64Image = null;
+
+        const content = {
+            ar: { title: "سيلفي الفضاء الواقعي", desc: "محاكاة واقعية 100% داخل مقصورة ISS", upload: "ارفع صورتك الشخصية", btn: "إقلاع الآن", loading: "جاري المعالجة المدارية...", privacy: "خصوصيتك محمية: لا نقوم بتخزين صورك الشخصية نهائياً.", regions: ["الشرق الأوسط", "أوروبا", "أفريقيا", "آسيا", "الأمريكتين"] },
+            en: { title: "Realistic Space Selfie", desc: "100% Realistic simulation inside ISS Cupola", upload: "Upload Portrait", btn: "Launch Now", loading: "Orbital Processing...", privacy: "Privacy Protected: We do not store your personal photos.", regions: ["Middle East", "Europe", "Africa", "Asia", "Americas"] },
+            zh: { title: "写实太空自拍", desc: "ISS舱内100%真实模拟", upload: "上传您的照片", btn: "立即发射", loading: "轨道处理中...", privacy: "完全隐私：我们不存储您的个人照片。", regions: ["中东", "欧洲", "非洲", "亚洲", "美洲"] },
+            ko: { title: "사실적인 우주 셀카", desc: "ISS 내부의 100% 사실적인 시뮬레이션", upload: "사진 업로드", btn: "지금 발사", loading: "궤도 처리 중...", privacy: "개인 정보 보호: 사진은 저장되지 않습니다.", regions: ["중동", "유럽", "아프리카", "아시아", "아메리카"] }
+        };
+
+        function changeLang() {
+            selectedLang = document.getElementById('langSelect').value;
+            const t = content[selectedLang] || content['en'];
+            
+            document.getElementById('ui-title').innerText = t.title;
+            document.getElementById('ui-desc').innerText = t.desc;
+            document.getElementById('ui-upload').innerText = t.upload;
+            document.getElementById('ui-btn').innerText = t.btn;
+            document.getElementById('ui-loading').innerText = t.loading;
+            document.getElementById('ui-privacy').innerText = t.privacy;
+            
+            document.getElementById('bodyTag').className = selectedLang === 'ar' ? 'rtl' : 'ltr';
+            renderRegions();
+        }
+
+        function renderRegions() {
+            const t = content[selectedLang] || content['en'];
+            const container = document.getElementById('regionsList');
+            container.innerHTML = '';
+            t.regions.forEach((name, i) => {
+                const btn = document.createElement('button');
+                btn.className = `py-2 px-1 rounded-lg text-[10px] font-bold border transition-all ${currentRegion === i ? 'bg-white text-black border-white shadow-lg' : 'bg-white/5 border-white/10 text-white/40'}`;
+                btn.innerText = name;
+                btn.onclick = () => { currentRegion = i; renderRegions(); };
+                container.appendChild(btn);
+            });
+        }
+
+        function handleFile(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('imgPreview').src = e.target.result;
+                    document.getElementById('previewContainer').classList.remove('hidden');
+                    document.getElementById('uploadPlaceholder').classList.add('hidden');
+                    base64Image = e.target.result.split(',')[1];
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function generate() {
+            if (!base64Image) return alert("Please upload a photo first!");
+            
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+            const t = content[selectedLang] || content['en'];
+            const regionName = t.regions[currentRegion];
+
+            const prompt = `A wide-angle, hyper-realistic 8K photograph taken inside the International Space Station's Cupola module. The camera shows a large portion of the module's interior structure, including control panels and metal framing. In the center, a high-tech tablet is floating in zero-G, clearly displaying the person's face from the attached image. Through the massive wrap-around windows, the Earth is visible in stunning detail over ${regionName}. The lighting is cinematic, with natural blueish Earth-shine reflecting off the interior metal and the person's digital face. 100% real photography style, zero AI artifacts.`;
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{ text: prompt }, { inlineData: { mimeType: "image/png", data: base64Image } }]
+                        }],
+                        generationConfig: { responseModalities: ['TEXT', 'IMAGE'] }
+                    })
+                });
+
+                const result = await response.json();
+                const genData = result.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
+
+                if (genData) {
+                    document.getElementById('finalImg').src = `data:image/png;base64,${genData}`;
+                    document.getElementById('resultView').classList.remove('hidden');
+                    document.getElementById('placeholderView').classList.add('hidden');
+                }
+            } catch (e) {
+                console.error(e);
+            } finally {
+                document.getElementById('loadingOverlay').classList.add('hidden');
+            }
+        }
+
+        function downloadImg() {
+            const link = document.createElement('a');
+            link.href = document.getElementById('finalImg').src;
+            link.download = 'space-selfie.png';
+            link.click();
+        }
+
+        // Init
+        renderRegions();
+        lucide.createIcons();
+    </script>
+</body>
+</html>
+
