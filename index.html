@@ -154,7 +154,7 @@
     </footer>
 
     <script>
-        const API_KEY = "AIzaSyAbOX7om7AdG0bdadPpMjn72rrhsfQO-fU"; // System will inject the key automatically
+        const API_KEY = ""; // System will inject the key automatically
         let currentLang = 'en'; 
         let currentRegion = 0;
         let userImageBase64 = null;
@@ -270,20 +270,29 @@
 
                 const data = await response.json();
                 
+                // Debugging: Log full response to see safety ratings
+                console.log("Full API Response:", data);
+
+                // Check for safety finish reason
+                const candidate = data.candidates?.[0];
+                if (candidate?.finishReason === 'SAFETY') {
+                     throw new Error(currentLang === 'ar' ? "تم حظر الصورة بواسطة فلاتر الأمان. الرجاء تجربة صورة مختلفة." : "Image blocked by safety filters. Please try a different photo.");
+                }
+
                 // Check if we have a valid image candidate
-                const img = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
+                const img = candidate?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
 
                 if(img) {
                     document.getElementById('finalImg').src = `data:image/png;base64,${img}`;
                     document.getElementById('resultView').classList.remove('hidden');
                     document.getElementById('emptyView').classList.add('hidden');
                 } else {
-                    throw new Error("No image generated.");
+                    throw new Error("No image generated. Finish Reason: " + (candidate?.finishReason || "Unknown"));
                 }
 
             } catch(e) {
                 console.error(e);
-                alert(currentLang === 'ar' ? "حدث خطأ أثناء المعالجة. يرجى المحاولة مرة أخرى." : "Error processing image. Please try again.");
+                alert(e.message || (currentLang === 'ar' ? "حدث خطأ أثناء المعالجة." : "Error processing image."));
             } finally {
                 document.getElementById('loadingOverlay').classList.add('hidden');
             }
